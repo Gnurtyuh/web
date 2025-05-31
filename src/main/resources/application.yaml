@@ -1,0 +1,6 @@
+spring.application.name=CoursesShop
+spring.datasource.url=jdbc:postgresql://localhost:5432/Course
+spring.datasource.username=postgres
+spring.datasource.password=12345678
+server.port=8080
+server.servlet.context-path= /coursesShop

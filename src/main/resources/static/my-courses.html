@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Khóa học của tôi</title>
+  <style>
+    /* CSS demo đơn giản */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #fff;
+      color: #333;
+    }
+    header {
+      background: #2c3e50;
+      color: white;
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header a.logo {
+      font-size: 1.6rem;
+      font-weight: bold;
+      color: white;
+      text-decoration: none;
+    }
+    nav a {
+      color: white;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    nav a.active {
+      text-decoration: underline;
+      font-weight: 700;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    .auth-buttons a {
+      margin-left: 15px;
+      color: white;
+      text-decoration: none;
+      border: 1px solid white;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    .auth-buttons a:hover {
+      background: white;
+      color: #2c3e50;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 0 15px;
+    }
+    .my-courses-section h2 {
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+    .course-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .course-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      width: 280px;
+      padding: 15px;
+      background-color: #f9f9f9;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    .course-card:hover {
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .course-card img {
+      width: 100%;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+    .course-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.2rem;
+      color: #34495e;
+    }
+    .course-card p {
+      margin: 0 0 15px 0;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .course-card button {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+    }
+    .course-card button:hover {
+      background-color: #219150;
+    }
+
+    #no-courses {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 18px;
+      color: #999;
+    }
+
+    footer.footer {
+      background: #2c3e50;
+      color: white;
+      padding: 20px 15px;
+      margin-top: 60px;
+      font-size: 0.9rem;
+    }
+    footer .footer-container {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      max-width: 900px;
+      margin: 0 auto 15px auto;
+    }
+    footer .footer-column {
+      flex: 1 1 250px;
+      margin: 10px;
+    }
+    footer a {
+      color: #1abc9c;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    footer .footer-bottom {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo">5NT Learning</a>
+    <nav id="main-nav">
+      <a href="index.html">Khóa học</a>
+      <a href="topup.html">Nạp tiền</a>
+      <a href="my-courses.html" class="active">Khóa học của tôi</a>
+    </nav>
+    <div class="auth-buttons" id="auth-buttons">
+      <a href="login.html" class="btn-login">Đăng nhập</a>
+      <a href="register.html" class="btn-register">Đăng ký</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="my-courses-section">
+      <h2>Khóa học bạn đã mua</h2>
+      <div id="my-courses-list" class="course-list"></div>
+      <p id="no-courses" style="display:none;">
+        Bạn chưa mua khóa học nào.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-column">
+        <h3>Về 5NT Learning</h3>
+        <p>5NT Learning là nền tảng học trực tuyến cung cấp các khóa học chất lượng, giúp bạn phát triển kỹ năng và nâng cao sự nghiệp.</p>
+      </div>
+      <div class="footer-column">
+        <h3>Liên kết nhanh</h3>
+        <ul>
+          <li><a href="index.html">Trang chủ</a></li>
+          <li><a href="topup.html">Nạp tiền</a></li>
+          <li><a href="login.html">Đăng nhập</a></li>
+          <li><a href="register.html">Đăng ký</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Thông tin liên hệ</h3>
+        <p>Email: <a href="mailto:support@5NT.vn">support@5NT.vn</a></p>
+        <p>Hotline: <a href="tel:0123456789">0123 456 789</a></p>
+        <p>Địa chỉ: Số 10, Đường Lập Trình, Quận Code, Hà Nội</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 5NT Learning. Đã đăng ký bản quyền.</p>
+    </div>
+  </footer>
+
+  
+    <script src="js/my-course.js"></script>
+</body>
+</html>

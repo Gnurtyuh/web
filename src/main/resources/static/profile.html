@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Trang quản lý người dùng</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #0056b3;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header .logo img {
+      height: 40px;
+    }
+    .user-menu {
+      position: relative;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .user-menu img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 8px;
+      object-fit: cover;
+      border: 2px solid white;
+    }
+    .user-menu > span {
+      color: white;
+      font-weight: bold;
+    }
+    .user-menu ul {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      list-style: none;
+      padding: 10px 0;
+      min-width: 150px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 200;
+    }
+    .user-menu.active ul {
+      display: block;
+    }
+    .user-menu ul li {
+      padding: 8px 20px;
+    }
+    .user-menu ul li a {
+      color: #333;
+      text-decoration: none;
+    }
+    .user-menu ul li a:hover {
+      color: #0056b3;
+    }
+    main.dashboard-container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+      display: flex;
+      gap: 40px;
+    }
+    .user-info {
+      flex: 1;
+      border-right: 1px solid #ddd;
+      padding-right: 30px;
+    }
+    .user-info .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #0056b3;
+      margin-bottom: 20px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .user-info .avatar:hover {
+      opacity: 0.8;
+    }
+    .user-info h2 {
+      margin: 0 0 10px 0;
+      font-size: 26px;
+      color: #0056b3;
+    }
+    .user-info p {
+      font-size: 16px;
+      color: #555;
+      margin: 5px 0;
+    }
+    .user-info .balance {
+      font-weight: 700;
+      color: #008000;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    .user-info .created-at {
+      color: #999;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    .user-info button {
+      margin-top: 25px;
+      padding: 10px 20px;
+      background: #0056b3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .user-info button:hover {
+      background: #003080;
+    }
+    .user-courses {
+      flex: 2;
+    }
+    .user-courses h3 {
+      margin-top: 0;
+      color: #0056b3;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    #course-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #course-list li {
+      background: #e6f0ff;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      font-weight: 600;
+      color: #0056b3;
+    }
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #777;
+      font-size: 14px;
+      margin-top: auto;
+      background: #222;
+    }
+    #notification {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: #28a745;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 10000;
+    }
+    #notification.error {
+      background: #dc3545;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      width: 300px;
+      position: relative;
+    }
+    .modal-content h3 {
+      margin: 0 0 15px;
+      font-size: 20px;
+      text-align: center;
+      color: #0056b3;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 20px;
+      cursor: pointer;
+      color: #333;
+    }
+    .close-btn:hover {
+      color: #000;
+    }
+    form label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+    form input[type="text"],
+    form input[type="email"],
+    form input[type="password"],
+    form input[type="file"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    form button {
+      width: 100%;
+      padding: 10px;
+      background: #0056b3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    form button:hover {
+      background: #003080;
+    }
+    #avatar-preview {
+      display: block;
+      margin: 10px auto 20px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo">
+      <img src="./sale/image/logo-removebg-preview.png" alt="5NT Learning Logo" />
+    </a>
+    <div class="user-menu" id="user-menu">
+      <img src="user-avatar.png" alt="User Avatar" id="menu-avatar" />
+      <span id="menu-name">User</span>
+      <ul>
+        <li><a href="profile.html" id="profile-link">Thông tin cá nhân</a></li>
+        <li><a href="my-courses.html" id="my-courses-link">Khóa học của tôi</a></li>
+        <li><a href="topup.html" id="top-up-link">Nạp tiền</a></li>
+        <li><a href="#" id="logout-btn">Đăng xuất</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main class="dashboard-container">
+    <section class="user-info">
+      <img src="user-avatar.png" alt="Avatar người dùng" class="avatar" id="user-avatar" title="Click để đổi ảnh đại diện" />
+      <h2 id="user-name">Nguyễn Văn A</h2>
+      <p id="user-email">nguyenvana@example.com</p>
+      <p class="balance">Số dư tài khoản: <span id="user-balance">1,000,000 VND</span></p>
+      <p class="created-at">Ngày tạo tài khoản: <span id="user-created">2023-03-15</span></p>
+      <button id="edit-profile-btn"><i class="fa fa-edit"></i> Chỉnh sửa thông tin</button>
+      <button id="change-password-btn" style="margin-left:10px;"><i class="fa fa-key"></i> Đổi mật khẩu</button>
+    </section>
+
+    <section class="user-courses">
+      <h3>Khóa học bạn đã mua</h3>
+      <ul id="course-list">
+        <li>Khóa học lập trình Python</li>
+        <li>Khóa học thiết kế Web HTML & CSS</li>
+        <li>Khóa học phát triển ứng dụng mobile</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 5NT Learning. Đã đăng ký bản quyền.</p>
+  </footer>
+
+  <div id="notification"></div>
+
+  <div id="edit-profile-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-modal">×</span>
+      <h3>Chỉnh sửa thông tin người dùng</h3>
+      <form id="edit-profile-form">
+        <label for="edit-name">Tên:</label>
+        <input type="text" id="edit-name" name="name" required />
+        <label for="edit-email">Email:</label>
+        <input type="email" id="edit-email" name="email" required />
+        <button type="submit">Lưu thay đổi</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="change-password-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-password-modal">×</span>
+      <h3>Đổi mật khẩu</h3>
+      <form id="change-password-form">
+        <label for="current-password">Mật khẩu hiện tại:</label>
+        <input type="password" id="current-password" name="current-password" required />
+        <label for="new-password">Mật khẩu mới:</label>
+        <input type="password" id="new-password" name="new-password" required />
+        <label for="confirm-password">Xác nhận mật khẩu mới:</label>
+        <input type="password" id="confirm-password" name="confirm-password" required />
+        <button type="submit">Đổi mật khẩu</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="edit-avatar-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" id="close-avatar-modal">×</span>
+      <h3>Chọn ảnh đại diện mới</h3>
+      <form id="edit-avatar-form">
+        <input type="file" id="avatar-input" accept="image/*" required />
+        <img id="avatar-preview" src="user-avatar.png" alt="Xem trước ảnh đại diện" />
+        <button type="submit">Lưu ảnh đại diện</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/profile.js"></script>
+</body>
+</html>
