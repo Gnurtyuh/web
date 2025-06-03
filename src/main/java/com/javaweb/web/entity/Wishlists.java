@@ -1,50 +1,29 @@
-package com.javaweb.web.model;
+package com.javaweb.web.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+
+import java.sql.Timestamp;
 
 @Entity
-@Table(name = "wishlists")
+@Table(name = "wishlists", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "course_id"})
+})
+@Data
 public class Wishlists {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    int id;
-    @Column(name = "user_id", nullable = false)
-    int userId;
-    @Column(name = "course_id", nullable = false)
-    int courseId;
-    @Column(name = "created_at", nullable = false)
-    String createdAt;
+    private int id;
 
-    public int getUserId() {
-        return userId;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user;
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", nullable = false)
+    private Courses course;
 
-    public int getCourseId() {
-        return courseId;
-    }
-
-    public void setCourseId(int courseId) {
-        this.courseId = courseId;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    @Column(name = "created_at", updatable = false, insertable = false)
+    private Timestamp createdAt;
 }
+

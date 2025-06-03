@@ -1,35 +1,57 @@
 package com.javaweb.web.service;
 
-import com.javaweb.web.entity.CoursesLessons;
-import com.javaweb.web.repository.CoursesLessonsRepo;
+import com.javaweb.web.entity.CourseLessons;
+import com.javaweb.web.repository.CourseLessonsRepo;
+import com.javaweb.web.repository.EnrollmentsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-public class CourseLessonService {
+public class CourseLessonsService {
     @Autowired
-    private CoursesLessonsRepo coursesLessonsRepo;
-    public List<CoursesLessons> getAllCoursesLessons() {
+    private CourseLessonsRepo coursesLessonsRepo;
+    @Autowired private EnrollmentsRepo enrollRepo;
+
+    public CourseLessons getLessonWithAccessCheck(int id, int userId) {
+        CourseLessons lesson = coursesLessonsRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
+
+        int courseId = lesson.getSection().getCourse().getId();
+
+        boolean enrolled = enrollRepo.existsByUserIdAndCourseId(userId, courseId);
+        if (!enrolled) {
+            throw new AccessDeniedException("Bạn chưa mua khóa học này");
+        }
+        return lesson;
+    }
+    public List<CourseLessons> getAllCoursesLessons() {
         return coursesLessonsRepo.findAll();
     }
-    public CoursesLessons getCoursesLessonById(int id) {
-        return coursesLessonsRepo.findById(id).get();
+    public CourseLessons findById(int id) {
+        return coursesLessonsRepo.findById(id).orElseThrow(()-> new RuntimeException("Course Lesson not found"));
     }
-    public CoursesLessons getCoursesLessonByName(String name) {
-        return coursesLessonsRepo.findByName(name);
+    public CourseLessons getCoursesLessonByName(String title) {
+        return coursesLessonsRepo.findByTitle(title);
     }
-    public CoursesLessons getCoursesLessonBySectionId(int sectionId) {
-        return coursesLessonsRepo.findBySectionId(sectionId);
+    public List<CourseLessons> getCoursesLessonBySectionId(int sectionId) {
+        return coursesLessonsRepo.getCoursesLessonBySectionId(sectionId);
     }
-    public CoursesLessons addCoursesLesson(CoursesLessons coursesLesson) {
+
+    public CourseLessons addCoursesLesson(CourseLessons coursesLesson) {
         return coursesLessonsRepo.save(coursesLesson);
     }
-    public CoursesLessons updateCoursesLesson(CoursesLessons coursesLesson) {
-        return coursesLessonsRepo.save(coursesLesson);
+    public CourseLessons updateCoursesLesson(int id,CourseLessons coursesLesson) {
+        if (coursesLessonsRepo.findById(id).orElseThrow(()-> new RuntimeException("Course Lesson not found"))!= null) {
+            return coursesLessonsRepo.save(coursesLesson);
+        }
+        return null;
     }
     public void deleteCoursesLesson(int id) {
-        coursesLessonsRepo.deleteById(id);
+        if (coursesLessonsRepo.findById(id).orElseThrow(()-> new RuntimeException("Course Lesson not found"))!= null) {
+            coursesLessonsRepo.deleteById(id);
+        }
     }
 }

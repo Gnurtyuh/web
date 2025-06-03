@@ -1,6 +1,5 @@
-package com.javaweb.web.controller.user;
+package com.javaweb.web.controller.admin;
 
-import com.javaweb.web.entity.Api;
 import com.javaweb.web.entity.CourseSections;
 import com.javaweb.web.service.CourseSectionsService;
 import lombok.AccessLevel;
@@ -14,15 +13,15 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/CourseSection")
+@RequestMapping("/AdCourseSection")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class CourseSectionsController {
+public class AdCourseSectionsController {
     @Autowired
     CourseSectionsService sectionService;
 
 
-    @GetMapping("/by-course/{courseId}")
+    @GetMapping("/By-course/{courseId}")
     public ResponseEntity<List<CourseSections>> getByCourse(@PathVariable int courseId) {
         List<CourseSections> sections = sectionService.getCourseSectionsByCourseId(courseId);
         return ResponseEntity.ok(sections);

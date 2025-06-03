@@ -1,61 +1,26 @@
-package com.javaweb.web.model;
+package com.javaweb.web.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "course_sections")
+@Data
 public class CourseSections {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    int id;
-    @Column(name = "course_id", nullable = false)
-    int courseId;
+    private int id;
+    @JoinColumn(name = "course_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Courses course;
     @Column(name = "title", nullable = false)
-    String title;
+    private String title;
     @Column(name = "section_order", nullable = false)
-    String sectionOrder;
-    @Column(name = "created_at", nullable = false)
-    Timestamp created_at;
-    public int getId() {
-        return id;
-    }
+    private String sectionOrder;
+    @Column(name = "created_at", updatable = false, insertable = false)
+    private Timestamp createdAt;
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getCourseId() {
-        return courseId;
-    }
-
-    public void setCourseId(int courseId) {
-        this.courseId = courseId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getSectionOrder() {
-        return sectionOrder;
-    }
-
-    public void setSectionOrder(String sectionOrder) {
-        this.sectionOrder = sectionOrder;
-    }
-
-    public Timestamp getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(Timestamp created_at) {
-        this.created_at = created_at;
-    }
 }

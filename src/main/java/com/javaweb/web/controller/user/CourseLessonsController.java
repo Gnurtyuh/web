@@ -1,13 +1,15 @@
-package com.javaweb.web.controller;
+package com.javaweb.web.controller.user;
 
-import com.javaweb.web.entity.Api;
 import com.javaweb.web.entity.CourseLessons;
+import com.javaweb.web.service.AccessService;
 import com.javaweb.web.service.CourseLessonsService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,16 +21,20 @@ import java.util.List;
 public class CourseLessonsController {
     @Autowired
     CourseLessonsService courseLessonsService;
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getLesson(@PathVariable int id,
-                                       @RequestParam int userId) {
-        CourseLessons lesson = courseLessonsService.getLessonWithAccessCheck(id, userId);
-        return ResponseEntity.ok(lesson);
-    }
+    @Autowired
+    AccessService accessService;
 
-    @PostMapping
-    ResponseEntity<String> addCourseLesson(@RequestBody CourseLessons courseLessons) {
-        return ResponseEntity.ok("Thêm khóa học thành công");
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getById(@PathVariable int id, @RequestParam int userId) {
+        try {
+            CourseLessons lesson = courseLessonsService.findById(id);
+            accessService.checkAccessToCourse(userId, lesson.getSection().getCourse().getId());
+            return ResponseEntity.ok(lesson);
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy bài học.");
+        }
     }
     @GetMapping("findAll")
     ResponseEntity<List<CourseLessons>> getCoursesLessonBySectionId(@RequestParam("section_id") int sectionId) {

@@ -1,73 +1,26 @@
-package com.javaweb.web.model;
-
-
+package com.javaweb.web.entity;
 import jakarta.persistence.*;
+import lombok.Data;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 @Entity
 @Table(name = "users")
-
+@Data
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    int id;
+    private int id;
     @Column(name = "name", nullable = false)
-    String name;
+    private String name;
     @Column(name = "email", nullable = false)
-    String email;
+    private String email;
     @Column(name = "password_hash", nullable = false)
-    String password_hash;
-    @Column(name = "balance", nullable = false)
-    double balance;
-    @Column(name = "created_at", nullable = false)
-    Timestamp created_at;
+    private String passwordHash;
+    @Column(name = "balance", updatable = false, insertable = false)
+    private BigDecimal balance;
+    @Column(name = "created_at", updatable = false, insertable = false)
+    private Timestamp createdAt;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword_hash() {
-        return password_hash;
-    }
-
-    public void setPassword_hash(String password_hash) {
-        this.password_hash = password_hash;
-    }
-
-    public double getBalance() {
-        return balance;
-    }
-
-    public void setBalance(double balance) {
-        this.balance = balance;
-    }
-
-    public Timestamp getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(Timestamp created_at) {
-        this.created_at = created_at;
-    }
 }

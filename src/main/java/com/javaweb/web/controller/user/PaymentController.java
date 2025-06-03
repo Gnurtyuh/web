@@ -1,4 +1,4 @@
-package com.javaweb.web.controller;
+package com.javaweb.web.controller.user;
 
 import com.javaweb.web.entity.Enrollments;
 import com.javaweb.web.entity.Topups;
@@ -32,14 +32,5 @@ public class PaymentController {
         List<Topups> topupHistory = topupsService.findByUserId(userId);
         return ResponseEntity.ok(topupHistory);
     }
-    @GetMapping("/enrollments")
-    public ResponseEntity<List<Enrollments>> getEnrolledCourses(@RequestParam int userId) {
-        List<Enrollments> enrollments = enrollmentService.getEnrollmentByUserId(userId);
-        return ResponseEntity.ok(enrollments);
-    }
-    @GetMapping("findAll")
-    public ResponseEntity<List<Enrollments>> findAll() {
-        List<Enrollments> enrollments = enrollmentService.getAllEnrollments();
-        return ResponseEntity.ok(enrollments);
-    }
+
 }

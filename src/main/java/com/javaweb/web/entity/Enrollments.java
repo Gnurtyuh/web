@@ -1,49 +1,26 @@
-package com.javaweb.web.model;
+package com.javaweb.web.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+
+import java.sql.Timestamp;
+
 @Entity
 @Table(name = "enrollments")
+@Data
 public class Enrollments {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    int id;
-    @Column(name = "user_id", nullable = false)
-    int userId;
-    @Column(name = "course_id", nullable = false)
-    int courseId;
-    @Column(name = "enrolled_at", nullable = false)
-    String enrolledAt;
+    private int id;
 
-    public int getId() {
-        return id;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private Users user;
+    @JoinColumn(name = "course_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Courses course;
+    @Column(name = "created_at", updatable = false, insertable = false)
+    private Timestamp createdAt;
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getCourseId() {
-        return courseId;
-    }
-
-    public void setCourseId(int courseId) {
-        this.courseId = courseId;
-    }
-
-    public int getUserId() {
-        return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
-    public String getEnrolledAt() {
-        return enrolledAt;
-    }
-
-    public void setEnrolledAt(String enrolledAt) {
-        this.enrolledAt = enrolledAt;
-    }
 }

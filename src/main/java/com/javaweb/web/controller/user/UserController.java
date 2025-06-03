@@ -1,12 +1,10 @@
-package com.javaweb.web.controller;
+package com.javaweb.web.controller.user;
 
-import com.javaweb.web.entity.Api;
 import com.javaweb.web.entity.Users;
 import com.javaweb.web.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 
@@ -15,24 +13,14 @@ public class UserController {
     @Autowired
     private UsersService usersService;
     @PostMapping
-    Api<Users> createUser(@RequestBody Users user) {
-        return Api.<Users>builder()
-                .result(usersService.userRegister(user))
-                .build();
+    ResponseEntity<String> createUser(@RequestBody Users user) {
+        usersService.userRegister(user);
+        return ResponseEntity.ok("Đăng ký thành công");
     }
-
-    @GetMapping
-    Api<List<Users>> getAllUsers() {
-        return Api.<List<Users>>builder()
-                .result(usersService.getAllUsers())
-                .build();
+    @PostMapping("/{name}")
+    ResponseEntity<?> updateUser(@RequestBody Users user) {
+        usersService.updateUser(user);
+        return ResponseEntity.ok("Đổi thông tin thành công");
     }
-
-//    @PostMapping("/{id}")
-//    Api<Users> updateUser(@RequestBody Users user) {
-//        return Api.<Users>builder()
-//                .result(usersService.)
-//                .build();
-//    }
 
 }

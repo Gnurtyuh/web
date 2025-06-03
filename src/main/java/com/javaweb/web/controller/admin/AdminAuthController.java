@@ -1,4 +1,4 @@
-package com.javaweb.web.controller;
+package com.javaweb.web.controller.admin;
 import com.javaweb.web.entity.Authentication;
 import com.javaweb.web.service.AuthenticationService;
 import lombok.AccessLevel;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/authentication")
+@RequestMapping("/AdAuthentication")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminAuthController {

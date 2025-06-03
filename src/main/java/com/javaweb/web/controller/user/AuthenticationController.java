@@ -1,9 +1,7 @@
-package com.javaweb.web.controller;
+package com.javaweb.web.controller.user;
 
-import com.javaweb.web.entity.Api;
 import com.javaweb.web.entity.Authentication;
 import com.javaweb.web.service.AuthenticationService;
-import com.javaweb.web.util.AuthenticationUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
