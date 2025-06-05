@@ -1,0 +1,261 @@
+ document.addEventListener("DOMContentLoaded", () => {
+      // Lấy các phần tử DOM
+      const userMenu = document.getElementById("user-menu");
+      const authButtons = document.getElementById("auth-buttons");
+      const menuName = document.getElementById("menu-name");
+      const userName = document.getElementById("user-name");
+      const userEmail = document.getElementById("user-email");
+      const userBalance = document.getElementById("user-balance");
+      const userCreated = document.getElementById("user-created");
+      const courseList = document.getElementById("course-list");
+      const editProfileBtn = document.getElementById("edit-profile-btn");
+      const changePasswordBtn = document.getElementById("change-password-btn");
+      const editProfileModal = document.getElementById("edit-profile-modal");
+      const changePasswordModal = document.getElementById("change-password-modal");
+      const closeModal = document.getElementById("close-modal");
+      const closePasswordModal = document.getElementById("close-password-modal");
+      const editProfileForm = document.getElementById("edit-profile-form");
+      const changePasswordForm = document.getElementById("change-password-form");
+      const notification = document.getElementById("notification");
+      const logoutBtn = document.getElementById("logout-btn");
+      const myCoursesLink = document.getElementById("my-courses-link");
+      const profileLink = document.getElementById("profile-link");
+      const topupLink = document.getElementById("topup-link");
+      const contactLink = document.getElementById("contact-link");
+      const topupGuideLink = document.getElementById("topup-guide-link");
+
+      // Hàm hiển thị thông báo
+      function showNotification(message, isError = false) {
+        if (!notification) return console.error("Notification element not found");
+        notification.textContent = message;
+        notification.className = isError ? "error" : "";
+        notification.style.display = "block";
+        setTimeout(() => {
+          notification.style.display = "none";
+        }, 3000);
+      }
+
+      // Kiểm tra trạng thái đăng nhập
+      function checkLogin() {
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user) {
+          // Đã đăng nhập: ẩn auth-buttons, hiển thị user-menu
+          if (authButtons) authButtons.style.display = "none";
+          if (userMenu) {
+            userMenu.style.display = "flex";
+            if (menuName) menuName.textContent = user.name || "User";
+          }
+          // Hiển thị thông tin người dùng
+          if (userName) userName.textContent = user.name || "Nguyễn Văn A";
+          if (userEmail) userEmail.textContent = user.email || "nguyenvana@example.com";
+          if (userBalance) userBalance.textContent = Number(user.balance || 0).toLocaleString('vi-VN') + " VND";
+          if (userCreated) userCreated.textContent = user.createdAt || "2023-03-15";
+          // Hiển thị danh sách khóa học
+          if (courseList) {
+            courseList.innerHTML = "";
+            const myCourses = user.myCourses || [];
+            if (myCourses.length === 0) {
+              const li = document.createElement("li");
+              li.textContent = "Bạn chưa mua khóa học nào.";
+              courseList.appendChild(li);
+            } else {
+              myCourses.forEach(course => {
+                const li = document.createElement("li");
+                li.textContent = course.name;
+                courseList.appendChild(li);
+              });
+            }
+          }
+        } else {
+          // Chưa đăng nhập: hiển thị auth-buttons, ẩn user-menu
+          if (authButtons) authButtons.style.display = "flex";
+          if (userMenu) userMenu.style.display = "none";
+          // Chuyển hướng đến trang đăng nhập
+          showNotification("Vui lòng đăng nhập để xem thông tin cá nhân!", true);
+          setTimeout(() => {
+            window.location.href = "login.html";
+          }, 1500);
+          return false;
+        }
+        return true;
+      }
+
+      // Hàm đăng xuất
+      function logout() {
+        localStorage.removeItem("user");
+        showNotification("Bạn đã đăng xuất.");
+        setTimeout(() => {
+          window.location.href = "index.html";
+        }, 1500);
+      }
+
+      // Kiểm tra đăng nhập khi tải trang
+      if (!checkLogin()) return;
+
+      // Toggle menu người dùng
+      if (userMenu) {
+        userMenu.onclick = (e) => {
+          e.stopPropagation();
+          userMenu.classList.toggle("active");
+        };
+      }
+
+      // Đóng menu khi click bên ngoài
+      document.addEventListener("click", (e) => {
+        if (userMenu && !userMenu.contains(e.target)) {
+          userMenu.classList.remove("active");
+        }
+      });
+
+      // Ngăn menu đóng khi click vào menu con
+      if (userMenu) {
+        const userMenuUl = userMenu.querySelector("ul");
+        if (userMenuUl) {
+          userMenuUl.onclick = (e) => {
+            e.stopPropagation();
+          };
+        }
+      }
+
+      // Gắn sự kiện cho các liên kết trong menu
+      if (logoutBtn) {
+        logoutBtn.onclick = (e) => {
+          e.preventDefault();
+          userMenu.classList.remove("active");
+          logout();
+        };
+      }
+
+      if (myCoursesLink) {
+        myCoursesLink.onclick = (e) => {
+          e.preventDefault();
+          userMenu.classList.remove("active");
+          window.location.href = "my-courses.html";
+        };
+      }
+
+      if (profileLink) {
+        profileLink.onclick = (e) => {
+          e.preventDefault();
+          userMenu.classList.remove("active");
+          window.location.href = "profile.html";
+        };
+      }
+
+      if (topupLink) {
+        topupLink.onclick = (e) => {
+          e.preventDefault();
+          userMenu.classList.remove("active");
+          window.location.href = "topup.html";
+        };
+      }
+
+      if (contactLink) {
+        contactLink.onclick = (e) => {
+          e.preventDefault();
+          userMenu.classList.remove("active");
+          window.location.href = "contact.html";
+        };
+      }
+
+      if (topupGuideLink) {
+        topupGuideLink.onclick = (e) => {
+          e.preventDefault();
+          userMenu.classList.remove("active");
+          window.location.href = "topup-guide.html";
+        };
+      }
+
+      // Xử lý modal chỉnh sửa thông tin
+      if (editProfileBtn) {
+        editProfileBtn.onclick = () => {
+          if (editProfileModal) editProfileModal.style.display = "flex";
+          const user = JSON.parse(localStorage.getItem("user"));
+          if (user) {
+            document.getElementById("edit-name").value = user.name || "";
+            document.getElementById("edit-email").value = user.email || "";
+          }
+        };
+      }
+
+      if (closeModal) {
+        closeModal.onclick = () => {
+          if (editProfileModal) editProfileModal.style.display = "none";
+        };
+      }
+
+      // Xử lý modal đổi mật khẩu
+      if (changePasswordBtn) {
+        changePasswordBtn.onclick = () => {
+          if (changePasswordModal) changePasswordModal.style.display = "flex";
+        };
+      }
+
+      if (closePasswordModal) {
+        closePasswordModal.onclick = () => {
+          if (changePasswordModal) changePasswordModal.style.display = "none";
+        };
+      }
+
+      // Đóng modal khi click bên ngoài
+      window.onclick = (e) => {
+        if (e.target === editProfileModal) {
+          editProfileModal.style.display = "none";
+        }
+        if (e.target === changePasswordModal) {
+          changePasswordModal.style.display = "none";
+        }
+      };
+
+      // Xử lý form chỉnh sửa thông tin
+      if (editProfileForm) {
+        editProfileForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const name = document.getElementById("edit-name").value.trim();
+          const email = document.getElementById("edit-email").value.trim();
+          const user = JSON.parse(localStorage.getItem("user"));
+
+          if (user) {
+            user.name = name;
+            user.email = email;
+            localStorage.setItem("user", JSON.stringify(user));
+            showNotification("Cập nhật thông tin thành công!");
+            if (editProfileModal) editProfileModal.style.display = "none";
+            checkLogin(); // Cập nhật giao diện
+          }
+        });
+      }
+
+      // Xử lý form đổi mật khẩu
+      if (changePasswordForm) {
+        changePasswordForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const currentPassword = document.getElementById("current-password").value;
+          const newPassword = document.getElementById("new-password").value;
+          const confirmPassword = document.getElementById("confirm-password").value;
+          const user = JSON.parse(localStorage.getItem("user"));
+
+          if (newPassword !== confirmPassword) {
+            showNotification("Mật khẩu mới không khớp!", true);
+            return;
+          }
+
+          if (user) {
+            // Giả lập kiểm tra mật khẩu hiện tại (nếu có backend thì kiểm tra thật)
+            if (!user.password) user.password = "123456"; // Mật khẩu mặc định cho demo
+            if (currentPassword !== user.password) {
+              showNotification("Mật khẩu hiện tại không đúng!", true);
+              return;
+            }
+
+            user.password = newPassword;
+            localStorage.setItem("user", JSON.stringify(user));
+            showNotification("Đổi mật khẩu thành công!");
+            if (changePasswordModal) changePasswordModal.style.display = "none";
+            document.getElementById("current-password").value = "";
+            document.getElementById("new-password").value = "";
+            document.getElementById("confirm-password").value = "";
+          }
+        });
+      }
+    });
