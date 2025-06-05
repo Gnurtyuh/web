@@ -1,3 +1,4 @@
+
  document.addEventListener("DOMContentLoaded", () => {
       // Lấy các phần tử DOM
       const userMenu = document.getElementById("user-menu");
@@ -18,7 +19,11 @@
       const contactLink = document.getElementById("contact-link");
       const topupGuideLink = document.getElementById("topup-guide-link");
 
-      // Hàm hiển thị thông báo
+     const urlParams = new URLSearchParams(window.location.search);
+     const amount = urlParams.get("amount");
+     console.log("Số tiền cần thanh toán:", amount);
+
+     // Hàm hiển thị thông báo
       function showNotification(message, isError = false) {
         if (!notification) return console.error("Notification element not found");
         notification.textContent = message;
@@ -30,27 +35,38 @@
       }
 
       // Kiểm tra trạng thái đăng nhập
-      function checkLogin() {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (user) {
-          // Đã đăng nhập: ẩn auth-buttons, hiển thị user-menu
-          if (authButtons) authButtons.style.display = "none";
-          if (userMenu) {
-            userMenu.style.display = "flex";
-            if (menuName) menuName.textContent = user.name || "User";
+      async function checkLogin() {
+          const token = localStorage.getItem("userToken");
+          if (!token) {
+              redirectToLogin();
+              return false;
           }
-        } else {
-          // Chưa đăng nhập: hiển thị auth-buttons, ẩn user-menu
-          if (authButtons) authButtons.style.display = "flex";
-          if (userMenu) userMenu.style.display = "none";
-          // Chuyển hướng đến trang đăng nhập
-          showNotification("Vui lòng đăng nhập để thanh toán!", true);
-          setTimeout(() => {
-            window.location.href = "login.html";
-          }, 1500);
-          return false;
-        }
-        return true;
+          const res = await fetch("http://localhost:8080/CourseShop/api/users/user/me", {
+              headers: {
+                  "Authorization": "Bearer " + token,
+              },
+          });
+          if (!res.ok) throw new Error("Token không hợp lệ");
+          const user = await res.json();
+          if (user) {
+              // Đã đăng nhập: ẩn auth-buttons, hiển thị user-menu
+              if (authButtons) authButtons.style.display = "none";
+              if (userMenu) {
+                  userMenu.style.display = "flex";
+                  if (menuName) menuName.textContent = user.name || "User";
+              }
+          } else {
+              // Chưa đăng nhập: hiển thị auth-buttons, ẩn user-menu
+              if (authButtons) authButtons.style.display = "flex";
+              if (userMenu) userMenu.style.display = "none";
+              // Chuyển hướng đến trang đăng nhập
+              showNotification("Vui lòng đăng nhập để thanh toán!", true);
+              setTimeout(() => {
+                  window.location.href = "login.html";
+              }, 1500);
+              return false;
+          }
+          return true;
       }
 
       // Hàm đăng xuất
@@ -140,7 +156,7 @@
       }
 
       // Lấy dữ liệu khóa học từ localStorage
-      const selectedCourse = JSON.parse(localStorage.getItem("selectedCourse"));
+
 
       if (!selectedCourse) {
         if (courseInfoDiv) {
@@ -157,23 +173,7 @@
         return;
       }
 
-      // Hiển thị thông tin khóa học
-      if (courseInfoDiv) {
-        courseInfoDiv.textContent = `Bạn đang thanh toán khóa học: "${selectedCourse.name}" với giá ${Number(selectedCourse.price).toLocaleString('vi-VN')} VND`;
-      }
 
-      // Tạo QR Code
-      if (qrCodeDiv) {
-        const paymentUrl = `https://payment.example.com/pay?courseId=${selectedCourse.id}&amount=${selectedCourse.price}`;
-        QRCode.toCanvas(qrCodeDiv, paymentUrl, { width: 200 }, function (error) {
-          if (error) {
-            console.error(error);
-            if (courseInfoDiv) {
-              courseInfoDiv.textContent = "Lỗi khi tạo QR Code.";
-            }
-          }
-        });
-      }
 
       // Kiểm tra số dư
       const user = JSON.parse(localStorage.getItem("user"));

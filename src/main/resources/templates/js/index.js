@@ -1,23 +1,34 @@
-const courses = [
-  {id: 1, category: "Marketing", title: "Digital Marketing A-Z", instructor: "Minh Tâm", description: "Khóa học marketing tổng quan từ A đến Z" },
-  {id: 2, category: "Marketing", title: "Digital Content Marketing", instructor: "Lan Anh", description: "Học cách tạo nội dung digital thu hút" },
-  {id: 3, category: "Marketing", title: "TikTok Marketing", instructor: "Minh Tâm", description: "Chiến lược quảng cáo trên TikTok" },
-  {id: 4, category: "Công nghệ", title: "Lập trình Web", instructor: "Hoàng Nam", description: "Tìm hiểu cơ bản về phát triển web" },
-  {id: 5, category: "Công nghệ", title: "Lập trình Java", instructor: "Tuấn Anh", description: "Khóa học Java căn bản đến nâng cao" },
-  {id: 6, category: "Công nghệ", title: "Phân tích dữ liệu Python", instructor: "Bảo Châu", description: "Phân tích dữ liệu với Python" },
-  {id: 7, category: "Ngôn ngữ", title: "Tiếng Nhật", instructor: "Yuki", description: "Học tiếng Nhật từ cơ bản đến nâng cao" },
-  {id: 8, category: "Ngôn ngữ", title: "Tiếng Hàn", instructor: "Soojin", description: "Khóa học tiếng Hàn tổng quát" },
-  {id: 9, category: "Ngôn ngữ", title: "Tiếng Anh", instructor: "John Doe", description: "Tiếng Anh giao tiếp hiệu quả" },
-];
+const initialShow = 3;
+const loadStep = 3;
+let courses = []; // Lưu danh sách từ API
 
-const initialShow = 2;
-const loadStep = 2;
+const showCount = {}; // Sẽ khởi tạo động theo category
 
-const showCount = {
-  Marketing: initialShow,
-  "Công nghệ": initialShow,
-  "Ngôn ngữ": initialShow,
-};
+async function fetchCourses() {
+  const token = localStorage.getItem("userToken");
+
+  try {
+    const response = await fetch("http://localhost:8080/CourseShop/api/public/courses", {
+      headers: token ? { "Authorization": `Bearer ${token}` } : {}
+    });
+
+    if (!response.ok) throw new Error("Không thể tải danh sách khóa học!");
+
+    courses = await response.json();
+
+    // Khởi tạo showCount theo category
+    const categories = [...new Set(courses.map(c => c.category))];
+    categories.forEach(cat => {
+      if (!showCount[cat]) showCount[cat] = initialShow;
+    });
+
+    renderCourses();
+
+  } catch (err) {
+    console.error("Lỗi fetchCourses:", err);
+    showNotification("Lỗi tải khóa học!", true);
+  }
+}
 
 function renderCourses(filteredCourses = null) {
   const container = document.getElementById("courses-container");
@@ -62,27 +73,48 @@ function renderCourses(filteredCourses = null) {
       btnDetail.textContent = "Chi tiết";
       btnDetail.classList.add("btn-detail");
       btnDetail.onclick = () => {
-        const titleEncoded = encodeURIComponent(course.title);
-        const instructorEncoded = encodeURIComponent(course.instructor);
-        window.location.href = `course.html?title=${titleEncoded}&instructor=${instructorEncoded}`;
+        const idEncoded = encodeURIComponent(course.id);
+        window.location.href = `course.html/id=${idEncoded}`;
       };
 
       const btnBuy = document.createElement("button");
       btnBuy.textContent = "Mua";
       btnBuy.classList.add("btn-buy");
-      btnBuy.onclick = () => {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (user) {
-          const titleEncoded = encodeURIComponent(course.title);
-          const instructorEncoded = encodeURIComponent(course.instructor);
-          window.location.href = `payment.html?title=${titleEncoded}&instructor=${instructorEncoded}`;
-        } else {
+
+      btnBuy.onclick = async () => {
+        const token = localStorage.getItem("userToken");
+
+        if (!token) {
           showNotification("Vui lòng đăng nhập để mua khóa học!", true);
           setTimeout(() => {
             window.location.href = "login.html";
           }, 1500);
+          return;
+        }
+
+        try {
+          const response = await fetch("http://localhost:8080/CourseShop/api/users/payment/buy-course", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ courseId: course.id }) // Gửi ID khóa học
+          });
+
+          if (response.ok) {
+            alert("Mua khóa học thành công!");
+            window.location.reload(); // Hoặc chuyển hướng tùy ý
+          } else {
+            const errorData = await response.json();
+            showNotification(errorData.message || "Không thể mua khóa học!", true);
+          }
+        } catch (err) {
+          console.error("Lỗi khi mua khóa học:", err);
+          showNotification("Đã xảy ra lỗi!", true);
         }
       };
+
 
       buttonGroup.appendChild(btnDetail);
       buttonGroup.appendChild(btnBuy);
@@ -226,30 +258,45 @@ window.onload = () => {
     }
   };
 };
-document.addEventListener('DOMContentLoaded', () => {
-  const courseList = document.getElementById('course-list');
-  const loadMoreBtn = document.getElementById('load-more');
+function checkLoadMoreVisibility() {
   const coursesContainer = document.getElementById('courses-container');
+  if (!coursesContainer) return;
 
-  // Hàm kiểm tra và hiển thị nút "Xem thêm" khi hàng ngang đầy
-  function checkLoadMoreVisibility() {
+  // Duyệt từng category section
+  const sections = coursesContainer.querySelectorAll('.category-section');
+
+  sections.forEach(section => {
+    const courseList = section.querySelector('.course-list');
+    const loadMoreBtn = section.querySelector('button.btn-buy'); // dùng class chung đã đặt
+
+    if (!courseList || !loadMoreBtn) return;
+
     const courseItems = courseList.getElementsByClassName('course-item');
     if (courseItems.length === 0) {
       loadMoreBtn.style.display = 'none';
       return;
     }
 
-    const containerWidth = coursesContainer.offsetWidth;
-    const itemWidth = courseItems[0].offsetWidth + parseFloat(window.getComputedStyle(courseList).gap) || 0;
+    const containerWidth = courseList.offsetWidth;
+    const itemWidth = courseItems[0].offsetWidth + parseFloat(getComputedStyle(courseList).gap || 0);
     const maxItemsPerRow = Math.floor(containerWidth / itemWidth);
 
-    // Nếu số lượng khóa học bằng hoặc vượt quá số cột tối đa của một hàng, hiển thị nút "Xem thêm"
     if (courseItems.length >= maxItemsPerRow) {
       loadMoreBtn.style.display = 'block';
     } else {
       loadMoreBtn.style.display = 'none';
     }
-  }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  checkLogin();
+  fetchCourses();
+
+  document.getElementById("search-btn").onclick = handleSearch;
+  document.getElementById("search-input").onkeydown = (e) => {
+    if (e.key === "Enter") handleSearch();
+  };
 
   // Gọi hàm kiểm tra khi tải trang và khi resize
   window.addEventListener('load', checkLoadMoreVisibility);

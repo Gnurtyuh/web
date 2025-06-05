@@ -23,28 +23,40 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // Kiểm tra trạng thái đăng nhập
-      function checkLogin() {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (user) {
-          // Đã đăng nhập: ẩn auth-buttons, hiển thị user-menu
-          if (authButtons) authButtons.style.display = "none";
-          if (userMenu) {
-            userMenu.style.display = "flex";
-            if (menuName) menuName.textContent = user.name || "User";
+      async function checkLogin() {
+          const token = localStorage.getItem("userToken");
+          if (!token) {
+              redirectToLogin();
+              return false;
           }
-        } else {
-          // Chưa đăng nhập: hiển thị auth-buttons, ẩn user-menu
-          if (authButtons) authButtons.style.display = "flex";
-          if (userMenu) userMenu.style.display = "none";
-          // Chuyển hướng đến trang đăng nhập
-          showNotification("Vui lòng đăng nhập để thanh toán!", true);
-          setTimeout(() => {
-            window.location.href = "login.html";
-          }, 1500);
-          return false;
-        }
-        return true;
+          const res = await fetch("http://localhost:8080/CourseShop/api/users/user/me", {
+              headers: {
+                  "Authorization": "Bearer " + token,
+              },
+          });
+          if (!res.ok) throw new Error("Token không hợp lệ");
+          const user = await res.json();
+          if (user) {
+              // Đã đăng nhập: ẩn auth-buttons, hiển thị user-menu
+              if (authButtons) authButtons.style.display = "none";
+              if (userMenu) {
+                  userMenu.style.display = "flex";
+                  if (menuName) menuName.textContent = user.name || "User";
+              }
+          } else {
+              // Chưa đăng nhập: hiển thị auth-buttons, ẩn user-menu
+              if (authButtons) authButtons.style.display = "flex";
+              if (userMenu) userMenu.style.display = "none";
+              // Chuyển hướng đến trang đăng nhập
+              showNotification("Vui lòng đăng nhập để thanh toán!", true);
+              setTimeout(() => {
+                  window.location.href = "login.html";
+              }, 1500);
+              return false;
+          }
+          return true;
       }
+
 
       // Hàm đăng xuất
       function logout() {
@@ -132,3 +144,20 @@ document.addEventListener("DOMContentLoaded", () => {
         };
       }
     });
+
+document.getElementById("topup-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const amountInput = document.getElementById("amount");
+    const amount = parseInt(amountInput.value);
+
+    const message = document.getElementById("message");
+
+    if (isNaN(amount) || amount < 10000) {
+        message.textContent = "Số tiền nạp phải từ 10.000 VNĐ trở lên.";
+        message.style.color = "red";
+        return;
+    }
+
+    // ✅ Redirect sang payment.html kèm tham số
+    window.location.href = `payment.html?amount=${amount}`;
+});

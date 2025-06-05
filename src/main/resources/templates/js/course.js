@@ -1,5 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Lấy các phần tử DOM
+document.addEventListener("DOMContentLoaded", async () => {
   const userMenu = document.getElementById("user-menu");
   const authButtons = document.getElementById("auth-buttons");
   const menuName = document.getElementById("user-name");
@@ -10,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const courseInstructor = document.getElementById("course-instructor");
   const coursePrice = document.getElementById("course-price");
   const btnBuyCourse = document.getElementById("btn-buy-course");
-  const sectionList = document.getElementById("section-list");
+
   const notification = document.getElementById("notification");
   const logoutBtn = document.getElementById("logout-btn");
   const myCoursesLink = document.getElementById("my-courses-link");
@@ -18,6 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const topupLink = document.getElementById("topup-link");
   const contactLink = document.getElementById("contact-link");
 
+  const urlParams = new URLSearchParams(window.location.search);
+  const courseId = urlParams.get('id');
+  const token = localStorage.getItem("userToken");
   // Hàm hiển thị thông báo
   function showNotification(message, isError = false) {
     if (!notification) return console.error("Notification element not found");
@@ -126,105 +128,103 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Dữ liệu mẫu giả lập (thay bằng API trong thực tế)
-  const courseData = [
-    {
-      sectionTitle: "Chương 1: Giới thiệu",
-      lessons: [
-        { id: 1, title: "Bài 1: Tổng quan khóa học" },
-        { id: 2, title: "Bài 2: Cài đặt môi trường" }
-      ]
-    },
-    {
-      sectionTitle: "Chương 2: Kiến thức cơ bản",
-      lessons: [
-        { id: 3, title: "Bài 3: Biến và kiểu dữ liệu" },
-        { id: 4, title: "Bài 4: Toán tử và điều kiện" }
-      ]
-    },
-    {
-      sectionTitle: "Chương 3: Nâng cao",
-      lessons: [
-        { id: 5, title: "Bài 5: Hàm và đối tượng" },
-        { id: 6, title: "Bài 6: DOM và sự kiện" }
-      ]
-    }
-  ];
+  try {
+    // Gọi API lấy chi tiết khóa học
+    const resCourse = await fetch(`http://localhost:8080/CourseShop/api/public/courses/${courseId}`);
+    const courseInfo = await resCourse.json();
 
-  // Thông tin khóa học mẫu
-  const courseInfo = {
-    id: "js101",
-    name: "Khóa học JavaScript từ cơ bản đến nâng cao",
-    image: "https://via.placeholder.com/800x400?text=JavaScript+Course",
-    description: "Học JavaScript từ A-Z, giúp bạn xây dựng web tương tác và hiện đại.",
-    instructor: "Trần Thị B",
-    price: 499000
-  };
+    // Gọi API lấy danh sách bài học
+    const resLessons = await fetch(`http://localhost:8080/CourseShop/api/public/courseSection/by-course/${courseId}`);
+    const courseData = await resLessons.json();
 
-  // Hàm hiển thị danh sách bài học
-  function renderCourseSections(data) {
-    if (!sectionList) return;
-    sectionList.innerHTML = "";
-    data.forEach(section => {
-      const sectionDiv = document.createElement("div");
-      sectionDiv.className = "course-section";
+    // Hàm hiển thị danh sách bài học
 
-      const sectionTitle = document.createElement("h3");
-      sectionTitle.textContent = section.sectionTitle;
 
-      const lessonList = document.createElement("ul");
-      section.lessons.forEach(lesson => {
-        const li = document.createElement("li");
-        li.textContent = lesson.title;
-        lessonList.appendChild(li);
+    // Hiển thị chi tiết khóa học
+    if (courseTitle) courseTitle.textContent = courseInfo.name;
+    if (courseImage) courseImage.src = courseInfo.image;
+    if (courseDescription) courseDescription.textContent = courseInfo.description;
+    if (courseInstructor) courseInstructor.textContent = courseInfo.instructor;
+    if (coursePrice) coursePrice.textContent = courseInfo.price.toLocaleString("vi-VN");
+
+    // Hiển thị danh sách bài học
+    renderCourseSections(courseData);
+
+    if (user && token) {
+      const resCheck = await fetch(`http://localhost:8080/CourseShop/api/users/course/me/${courseId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
       });
 
-      sectionDiv.appendChild(sectionTitle);
-      sectionDiv.appendChild(lessonList);
-      sectionList.appendChild(sectionDiv);
-    });
-  }
-
-  // Hiển thị chi tiết khóa học
-  if (courseTitle) courseTitle.textContent = courseInfo.name;
-  if (courseImage) courseImage.src = courseInfo.image;
-  if (courseDescription) courseDescription.textContent = courseInfo.description;
-  if (courseInstructor) courseInstructor.textContent = courseInfo.instructor;
-  if (coursePrice) coursePrice.textContent = courseInfo.price.toLocaleString("vi-VN");
-
-  // Hiển thị danh sách bài học
-  renderCourseSections(courseData);
-
-  // Kiểm tra khóa học đã mua chưa
-  if (user && user.myCourses && user.myCourses.some(course => course.id === courseInfo.id)) {
-    if (btnBuyCourse) {
-      btnBuyCourse.textContent = "Đã sở hữu";
-      btnBuyCourse.disabled = true;
-      btnBuyCourse.style.background = "#6b7280";
-      btnBuyCourse.style.cursor = "not-allowed";
-    }
-  }
-
-  // Xử lý nút Mua khóa học
-  if (btnBuyCourse) {
-    btnBuyCourse.addEventListener("click", () => {
-      if (!user) {
-        showNotification("Vui lòng đăng nhập để mua khóa học!", true);
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 1500);
-        return;
+      if (resCheck.ok) {
+        // Đã sở hữu
+        btnBuyCourse.textContent = "Đã sở hữu";
+        btnBuyCourse.disabled = true;
+        btnBuyCourse.style.background = "#6b7280";
+        btnBuyCourse.style.cursor = "not-allowed";
       }
+    }
+    // Kiểm tra khóa học đã mua chưa
+    if (user && user.myCourses && user.myCourses.some(course => course.id === courseInfo.id)) {
+      if (btnBuyCourse) {
+        btnBuyCourse.textContent = "Đã sở hữu";
+        btnBuyCourse.disabled = true;
+        btnBuyCourse.style.background = "#6b7280";
+        btnBuyCourse.style.cursor = "not-allowed";
+      }
+    }
+    if (btnBuyCourse) {
+      btnBuyCourse.addEventListener("click", async () => {
+        if (!user || !token) {
+          showNotification("Vui lòng đăng nhập để mua khóa học!", true);
+          setTimeout(() => window.location.href = "login.html", 1500);
+          return;
+        }
 
-      // Lưu thông tin khóa học vào localStorage
-      localStorage.setItem("selectedCourse", JSON.stringify({
-        id: courseInfo.id,
-        name: courseInfo.name,
-        price: courseInfo.price
-      }));
+        // Gọi API mua khóa học
+        const resPurchase = await fetch(`http://localhost:8080/CourseShop/api/users/payment/buy-course`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ courseId: courseInfo.id })
+        });
 
-      // Chuyển hướng đến trang thanh toán
-      window.location.href = "payment.html";
-    });
+        if (resPurchase.ok) {
+          alert("Mua khóa học thành công!");
+          window.location.reload();
+        } else {
+          const errorData = await resPurchase.json();
+          showNotification(errorData.message || "Lỗi khi mua khóa học!", true);
+        }
+      });
+    }
+  } catch (err) {
+    console.error("Lỗi khi load dữ liệu khóa học:", err);
+    showNotification("Không thể tải thông tin khóa học!", true);
   }
 });
+function renderCourseSections(data) {
+  if (!sectionList) return;
+  sectionList.innerHTML = "";
+  data.forEach(section => {
+    const sectionDiv = document.createElement("div");
+    sectionDiv.className = "course-section";
+
+    const sectionTitle = document.createElement("h3");
+    sectionTitle.textContent = section.sectionTitle;
+
+    const lessonList = document.createElement("ul");
+    section.lessons.forEach(lesson => {
+      const li = document.createElement("li");
+      li.textContent = lesson.title;
+      lessonList.appendChild(li);
+    });
+
+    sectionDiv.appendChild(sectionTitle);
+    sectionDiv.appendChild(lessonList);
+    sectionList.appendChild(sectionDiv);
+  });
+}

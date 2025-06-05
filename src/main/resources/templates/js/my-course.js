@@ -12,8 +12,30 @@
       const topupLink = document.getElementById("topup-link");
       const contactLink = document.getElementById("contact-link");
       const topupGuideLink = document.getElementById("topup-guide-link");
+      const token = localStorage.getItem("userToken");
+        async function fetchMyCourses(token) {
+            try {
+                const res = await fetch("http://localhost:8080/CourseShop/api/users/course/myCourse", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
 
-      // Hàm hiển thị thông báo
+                if (!res.ok) {
+                    throw new Error("Không thể lấy danh sách khóa học");
+                }
+
+                const data = await res.json();
+                return data.courses || [];
+            } catch (error) {
+                console.error("Lỗi khi lấy khóa học:", error);
+                showNotification("Lỗi khi tải danh sách khóa học", true);
+                return [];
+            }
+        }
+
+        // Hàm hiển thị thông báo
       function showNotification(message, isError = false) {
         if (!notification) return console.error("Notification element not found");
         notification.textContent = message;
@@ -27,13 +49,14 @@
       // Kiểm tra trạng thái đăng nhập
       function checkLogin() {
         const user = JSON.parse(localStorage.getItem("user"));
-        if (user) {
+        if (user && token) {
           // Đã đăng nhập: ẩn auth-buttons, hiển thị user-menu
           if (authButtons) authButtons.style.display = "none";
           if (userMenu) {
             userMenu.style.display = "flex";
             if (menuName) menuName.textContent = user.name || "User";
           }
+            return { user, token };
         } else {
           // Chưa đăng nhập: hiển thị auth-buttons, ẩn user-menu
           if (authButtons) authButtons.style.display = "flex";
@@ -43,9 +66,8 @@
           setTimeout(() => {
             window.location.href = "login.html";
           }, 1500);
-          return false;
+          return null;
         }
-        return user;
       }
 
       // Hàm đăng xuất
@@ -76,7 +98,6 @@
         }
       });
 
-      // Ngăn menu đóng khi click vào menu con
       if (userMenu) {
         const userMenuUl = userMenu.querySelector("ul");
         if (userMenuUl) {
@@ -86,7 +107,6 @@
         }
       }
 
-      // Gắn sự kiện cho các liên kết trong menu
       if (logoutBtn) {
         logoutBtn.onclick = (e) => {
           e.preventDefault();
@@ -134,7 +154,9 @@
           window.location.href = "topup-guide.html";
         };
       }
-
+      function goToCourse(courseId) {
+            window.location.href = `course.html?id=${courseId}`;
+      }
       // Hàm hiển thị danh sách khóa học
       function renderMyCourses(courses) {
         if (!myCoursesList || !noCoursesMsg) return;
@@ -161,7 +183,7 @@
             <img src="${image}" alt="Ảnh khóa học" loading="lazy" />
             <h3>${course.name}</h3>
             <p>${description}</p>
-            <button onclick="goToCourse('${course.id}')">Xem khóa học</button>
+            <button onclick="goToCourse(course.id)">Xem khóa học</button>
           `;
 
           myCoursesList.appendChild(card);
@@ -169,10 +191,10 @@
       }
 
       // Hàm chuyển hướng đến trang chi tiết khóa học
-      function goToCourse(courseId) {
-        window.location.href = `course-detail.html?courseId=${courseId}`;
-      }
 
-      // Hiển thị khóa học từ localStorage
-      renderMyCourses(user.myCourses || []);
+
+        fetchMyCourses(user.token).then(courses => {
+            renderMyCourses(courses);
+        });
+
     });

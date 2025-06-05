@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/payment")
+@RequestMapping("/api/users/payment")
 
 public class PaymentController {
     @Autowired

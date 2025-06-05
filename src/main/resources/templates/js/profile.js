@@ -36,51 +36,72 @@
       }
 
       // Kiểm tra trạng thái đăng nhập
-      function checkLogin() {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (user) {
-          // Đã đăng nhập: ẩn auth-buttons, hiển thị user-menu
-          if (authButtons) authButtons.style.display = "none";
-          if (userMenu) {
-            userMenu.style.display = "flex";
-            if (menuName) menuName.textContent = user.name || "User";
-          }
-          // Hiển thị thông tin người dùng
-          if (userName) userName.textContent = user.name || "Nguyễn Văn A";
-          if (userEmail) userEmail.textContent = user.email || "nguyenvana@example.com";
-          if (userBalance) userBalance.textContent = Number(user.balance || 0).toLocaleString('vi-VN') + " VND";
-          if (userCreated) userCreated.textContent = user.createdAt || "2023-03-15";
-          // Hiển thị danh sách khóa học
-          if (courseList) {
-            courseList.innerHTML = "";
-            const myCourses = user.myCourses || [];
-            if (myCourses.length === 0) {
-              const li = document.createElement("li");
-              li.textContent = "Bạn chưa mua khóa học nào.";
-              courseList.appendChild(li);
-            } else {
-              myCourses.forEach(course => {
-                const li = document.createElement("li");
-                li.textContent = course.name;
-                courseList.appendChild(li);
-              });
-            }
-          }
-        } else {
-          // Chưa đăng nhập: hiển thị auth-buttons, ẩn user-menu
-          if (authButtons) authButtons.style.display = "flex";
-          if (userMenu) userMenu.style.display = "none";
-          // Chuyển hướng đến trang đăng nhập
-          showNotification("Vui lòng đăng nhập để xem thông tin cá nhân!", true);
-          setTimeout(() => {
-            window.location.href = "login.html";
-          }, 1500);
-          return false;
-        }
-        return true;
-      }
+     async function checkLogin() {
+         const token = localStorage.getItem("userToken");
+         if (!token) {
+             redirectToLogin();
+             return false;
+         }
 
-      // Hàm đăng xuất
+         try {
+             const res = await fetch("http://localhost:8080/CourseShop/api/users/user/me", {
+                 headers: {
+                     "Authorization": "Bearer " + token,
+                 },
+             });
+
+             if (!res.ok) throw new Error("Token không hợp lệ");
+             const user = await res.json();
+
+             // Hiển thị giao diện người dùng
+             if (authButtons) authButtons.style.display = "none";
+             if (userMenu) {
+                 userMenu.style.display = "flex";
+                 if (menuName) menuName.textContent = user.name ;
+             }
+
+             if (userName) userName.textContent = user.name ;
+             if (userEmail) userEmail.textContent = user.email ;
+             if (userBalance) userBalance.textContent = Number(user.balance || 0).toLocaleString('vi-VN') + " VND";
+             if (userCreated) userCreated.textContent = user.createdAt ;
+
+
+             if (courseList) {
+                 courseList.innerHTML = "";
+                 const myCourses = Array.isArray(user.myCourses) ? user.myCourses : [];
+                 if (myCourses.length === 0) {
+                     const li = document.createElement("li");
+                     li.textContent = "Bạn chưa mua khóa học nào.";
+                     courseList.appendChild(li);
+                 } else {
+                     myCourses.forEach(course => {
+                         const li = document.createElement("li");
+                         li.textContent = course.name;
+                         courseList.appendChild(li);
+                     });
+                 }
+             }
+             return;
+
+         } catch (err) {
+             console.error("Lỗi khi xác thực:", err.message);
+             alert('Đã xảy ra lỗi. Vui lòng thử lại sau.' + err.message);
+
+             return false;
+         }
+     }
+
+     function redirectToLogin() {
+         if (authButtons) authButtons.style.display = "flex";
+         if (userMenu) userMenu.style.display = "none";
+         showNotification("Vui lòng đăng nhập để xem thông tin cá nhân!", true);
+         setTimeout(() => {
+             window.location.href = "login.html";
+         }, 1500);
+     }
+
+
+     // Hàm đăng xuất
       function logout() {
         localStorage.removeItem("user");
         showNotification("Bạn đã đăng xuất.");
@@ -208,54 +229,80 @@
       };
 
       // Xử lý form chỉnh sửa thông tin
-      if (editProfileForm) {
-        editProfileForm.addEventListener("submit", (e) => {
-          e.preventDefault();
-          const name = document.getElementById("edit-name").value.trim();
-          const email = document.getElementById("edit-email").value.trim();
-          const user = JSON.parse(localStorage.getItem("user"));
+     if (editProfileForm) {
+         editProfileForm.addEventListener("submit", async (e) => {
+             e.preventDefault();
 
-          if (user) {
-            user.name = name;
-            user.email = email;
-            localStorage.setItem("user", JSON.stringify(user));
-            showNotification("Cập nhật thông tin thành công!");
-            if (editProfileModal) editProfileModal.style.display = "none";
-            checkLogin(); // Cập nhật giao diện
-          }
-        });
-      }
+             const name = document.getElementById("edit-name").value.trim();
+             const email = document.getElementById("edit-email").value.trim();
+             const token = localStorage.getItem("token");
 
-      // Xử lý form đổi mật khẩu
-      if (changePasswordForm) {
-        changePasswordForm.addEventListener("submit", (e) => {
-          e.preventDefault();
-          const currentPassword = document.getElementById("current-password").value;
-          const newPassword = document.getElementById("new-password").value;
-          const confirmPassword = document.getElementById("confirm-password").value;
-          const user = JSON.parse(localStorage.getItem("user"));
+             try {
+                 const response = await fetch("http://localhost:8080/CourseShop/api/users/user", {
+                     method: "PUT",
+                     headers: {
+                         "Content-Type": "application/json",
+                         "Authorization": `Bearer ${token}`,
+                     },
+                     body: JSON.stringify({ name, email }),
+                 });
 
-          if (newPassword !== confirmPassword) {
-            showNotification("Mật khẩu mới không khớp!", true);
-            return;
-          }
+                 if (!response.ok) throw new Error("Cập nhật thất bại");
 
-          if (user) {
-            // Giả lập kiểm tra mật khẩu hiện tại (nếu có backend thì kiểm tra thật)
-            if (!user.password) user.password = "123456"; // Mật khẩu mặc định cho demo
-            if (currentPassword !== user.password) {
-              showNotification("Mật khẩu hiện tại không đúng!", true);
-              return;
-            }
+                 const updatedUser = await response.json();
+                 localStorage.setItem("user", JSON.stringify(updatedUser));
+                 showNotification("Cập nhật thông tin thành công!");
+                 if (editProfileModal) editProfileModal.style.display = "none";
+                 checkLogin();
+             } catch (err) {
+                 showNotification("Lỗi cập nhật thông tin!", true);
+             }
+         });
+     }
 
-            user.password = newPassword;
-            localStorage.setItem("user", JSON.stringify(user));
-            showNotification("Đổi mật khẩu thành công!");
-            if (changePasswordModal) changePasswordModal.style.display = "none";
-            document.getElementById("current-password").value = "";
-            document.getElementById("new-password").value = "";
-            document.getElementById("confirm-password").value = "";
-          }
-        });
-      }
-    });
+
+     if (changePasswordForm) {
+         changePasswordForm.addEventListener("submit", async (e) => {
+             e.preventDefault();
+
+             const currentPassword = document.getElementById("current-password").value;
+             const newPassword = document.getElementById("new-password").value;
+             const confirmPassword = document.getElementById("confirm-password").value;
+             const token = localStorage.getItem("token");
+
+             if (newPassword !== confirmPassword) {
+                 showNotification("Mật khẩu mới không khớp!", true);
+                 return;
+             }
+
+             try {
+                 const response = await fetch("http://localhost:8080/CourseShop/api/users/user", {
+                     method: "POST",
+                     headers: {
+                         "Content-Type": "application/json",
+                         "Authorization": `Bearer ${token}`,
+                     },
+                     body: JSON.stringify({
+                         currentPassword,
+                         newPassword
+                     }),
+                 });
+
+                 if (!response.ok) {
+                     const error = await response.text();
+                     showNotification(error || "Đổi mật khẩu thất bại!", true);
+                     return;
+                 }
+
+                 showNotification("Đổi mật khẩu thành công!");
+                 if (changePasswordModal) changePasswordModal.style.display = "none";
+                 document.getElementById("current-password").value = "";
+                 document.getElementById("new-password").value = "";
+                 document.getElementById("confirm-password").value = "";
+             } catch (err) {
+                 showNotification("Lỗi kết nối đến máy chủ!", true);
+             }
+         });
+     }
+
+ });
