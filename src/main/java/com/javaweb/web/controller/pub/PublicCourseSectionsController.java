@@ -1,4 +1,4 @@
-package com.javaweb.web.controller.user;
+package com.javaweb.web.controller.pub;
 
 import com.javaweb.web.entity.CourseSections;
 import com.javaweb.web.service.CourseSectionsService;
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/CourseSection")
+@RequestMapping("/public/CourseSection")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class CourseSectionsController {
+public class PublicCourseSectionsController {
     @Autowired
     CourseSectionsService sectionService;
     @GetMapping("/by-course/{courseId}")

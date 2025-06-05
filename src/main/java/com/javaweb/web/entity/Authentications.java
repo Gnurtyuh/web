@@ -1,6 +1,5 @@
 package com.javaweb.web.entity;
 
-import jakarta.persistence.Entity;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 
-public class Authentication {
+public class Authentications {
     private String name;
     private String password;
 }

@@ -9,12 +9,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 @RestController
-@RequestMapping("AdPayment")
+@RequestMapping("/adminAdPayment")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class AdPaymentController {
@@ -40,4 +41,5 @@ public class AdPaymentController {
         List<Enrollments> enrollments = enrollmentService.getAllEnrollments();
         return ResponseEntity.ok(enrollments);
     }
+
 }

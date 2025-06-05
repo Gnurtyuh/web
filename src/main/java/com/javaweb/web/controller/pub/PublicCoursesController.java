@@ -1,25 +1,23 @@
-package com.javaweb.web.controller.user;
+package com.javaweb.web.controller.pub;
 
-import com.javaweb.web.entity.CourseLessons;
-import com.javaweb.web.entity.CourseSections;
 import com.javaweb.web.entity.Courses;
-import com.javaweb.web.service.*;
+import com.javaweb.web.service.CoursesService;
+import com.javaweb.web.service.EnrollmentsService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/Courses")
+@RequestMapping("/public/Courses")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class CoursesController {
+public class PublicCoursesController {
     @Autowired
     CoursesService courseService;
     @Autowired

@@ -1,5 +1,6 @@
 package com.javaweb.web.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,6 +17,7 @@ public class Topups {
     private int id;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private Users user;
     @Column(name = "amount", updatable = false, insertable = false)
     private BigDecimal amount;

@@ -4,12 +4,14 @@ import com.javaweb.web.entity.Users;
 import com.javaweb.web.repository.UsersRepo;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UsersService {
@@ -27,7 +29,13 @@ public class UsersService {
     public List<Users> getAllUsers() {
         return userRepo.findAll();
     }
-
+    public Users getUserByName(String name) {
+        if (userRepo.findByName(name).isPresent()) {
+            return userRepo.findByName(name)
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        }
+        return null;
+    }
     public Users getUserById(int id) {
         return userRepo.findById(id).orElseThrow(()-> new RuntimeException("User not found"));
     }

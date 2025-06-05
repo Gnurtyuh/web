@@ -1,5 +1,6 @@
 package com.javaweb.web.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ public class CourseLessons {
     private int id;
     @JoinColumn(name = "section_id", nullable = false)
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
     private CourseSections section;
     @Column(name = "title", nullable = false)
     private String title;

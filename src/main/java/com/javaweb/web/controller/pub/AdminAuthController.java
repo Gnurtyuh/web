@@ -1,6 +1,7 @@
-package com.javaweb.web.controller.admin;
-import com.javaweb.web.entity.Authentication;
+package com.javaweb.web.controller.pub;
+import com.javaweb.web.entity.Authentications;
 import com.javaweb.web.service.AuthenticationService;
+import com.javaweb.web.util.AuthenticationUtil;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -12,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/AdAuthentication")
+@RequestMapping("/privateAd/AdAuthentication")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminAuthController {
@@ -20,10 +21,8 @@ public class AdminAuthController {
     AuthenticationService authenticationService;
 
     @PostMapping("/AdminLogin")
-    public ResponseEntity<String> authenticate(@RequestBody Authentication authentication) {
-        if(authenticationService.authenticateAdmin(authentication)){
-            return ResponseEntity.ok("Đăng nhập thành công");
-        }
-        return null;
+    public ResponseEntity<AuthenticationUtil> authenticate(@RequestBody Authentications authentications) {
+        var result = authenticationService.authenticateAdmin(authentications);
+        return ResponseEntity.ok(result);
     }
 }

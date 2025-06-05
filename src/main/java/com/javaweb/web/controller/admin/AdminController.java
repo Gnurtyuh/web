@@ -6,12 +6,13 @@ import com.javaweb.web.service.AdminService;
 import com.javaweb.web.service.UsersService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 @RestController
-@RequestMapping("/AAAdmin")
+@RequestMapping("/admin/AAAdmin")
 public class AdminController {
     @Autowired
     private AdminService adminService;

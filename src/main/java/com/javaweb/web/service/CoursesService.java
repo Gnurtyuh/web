@@ -31,7 +31,7 @@ public class CoursesService {
     public void deleteCourse(int id) {
         coursesRepo.deleteById(id);
     }
-    public Courses getCourseByName(String name) {
-        return coursesRepo.findByName(name);
+    public Courses getCourseByTitle(String title) {
+        return coursesRepo.findByTitle(title);
     }
 }
