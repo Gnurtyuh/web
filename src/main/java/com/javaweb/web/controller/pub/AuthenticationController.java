@@ -21,7 +21,7 @@ public class AuthenticationController {
     @Autowired
     AuthenticationService authenticationService;
     @PostMapping("/login")
-    ResponseEntity<AuthenticationUtil> authenticate(@RequestBody Authentications authentications) {
+    public ResponseEntity<AuthenticationUtil> authenticate(@RequestBody Authentications authentications) {
         var result = authenticationService.authenticate(authentications);
         return ResponseEntity.ok(result);
     }

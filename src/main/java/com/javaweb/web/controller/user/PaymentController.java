@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/Payment")
+@RequestMapping("/api/payment")
 
 public class PaymentController {
     @Autowired
@@ -28,7 +28,6 @@ public class PaymentController {
     @Autowired
     private EnrollmentsService enrollmentService;
 
-    @Autowired private JWTUtil jwtUtil;
     @Autowired private UsersService usersService;
 
     @PostMapping("/topup")
