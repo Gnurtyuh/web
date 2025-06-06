@@ -7,29 +7,14 @@ import java.util.regex.Pattern;
 public class DirectoryUtil {
     private static String removeVietnameseAccents(String input) {
         if (input == null) return null;
-
         input = input.replaceAll("[đĐ]", "d");
-
         // Chuẩn hóa Unicode để tách dấu ra khỏi ký tự
         String normalized = Normalizer.normalize(input, Normalizer.Form.NFD);
-
         // Loại bỏ các dấu (ký tự kết hợp)
         Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
         String result = pattern.matcher(normalized).replaceAll("");
-
         // Chuyển thành chữ thường
         return result.toLowerCase();
-    }
-
-    public static void createCourseVideoDirectory(String courseTitle) {
-        String noAccentTitle = removeVietnameseAccents(courseTitle);
-        String safeCourseTitle = noAccentTitle.replaceAll("[^a-zA-Z0-9]", "_");
-        String folderPath = "src/main/resources/static/videos/" + safeCourseTitle;
-        File directory = new File(folderPath);
-
-        if (!directory.exists()) {
-            System.out.println("Created course video directory: " + directory.getAbsolutePath());
-        }
     }
 
     public void createVideoDirectory(String courseTitle, String sectionTitle) {
@@ -49,6 +34,16 @@ public class DirectoryUtil {
             } else {
                 System.err.println("Failed to create directory: " + directory.getAbsolutePath());
             }
+        }
+    }
+    public static void createCourseVideoDirectory(String courseTitle) {
+        String noAccentTitle = removeVietnameseAccents(courseTitle);
+        String safeCourseTitle = noAccentTitle.replaceAll("[^a-zA-Z0-9]", "_");
+        String folderPath = "src/main/resources/static/videos/" + safeCourseTitle;
+        File directory = new File(folderPath);
+
+        if (!directory.exists()) {
+            System.out.println("Created course video directory: " + directory.getAbsolutePath());
         }
     }
 }

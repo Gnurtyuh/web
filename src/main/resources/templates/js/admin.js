@@ -17,16 +17,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById(sectionId)?.classList.add("active");
     });
   });
-  function populateCourseDropdown() {
-    const courseSelect = document.getElementById("course-select");
-    courseSelect.innerHTML = '<option value="">Chọn khóa học</option>';
-    courses.forEach(course => {
-      const option = document.createElement("option");
-      option.value = course.id;
-      option.textContent = course.title;
-      courseSelect.appendChild(option);
-    });
-  }
+
   async function loadStatistics() {
     try {
       const res = await fetch("http://localhost:8080/CourseShop/api/admin/admin/statistics", {
@@ -119,7 +110,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       createCourseForm.reset();
 
       // Cập nhật dropdown khóa học bằng cách gọi API lấy danh sách mới
-      populateCourseDropdown();  // Giả sử hàm này gọi API lấy list mới và render dropdown
+      await populateCourseDropdown();  // Giả sử hàm này gọi API lấy list mới và render dropdown
 
       // Chọn khóa học mới tạo
       document.getElementById("course-select").value = createdCourse.id;
@@ -397,27 +388,67 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!res.ok) throw new Error("Cập nhật trạng thái thất bại!");
 
       showNotification(`Yêu cầu ${id} đã được ${status === "success" ? "duyệt" : "từ chối"}!`);
-      loadTopupRequests(); // Tải lại danh sách sau khi cập nhật
+      await loadTopupRequests(); // Tải lại danh sách sau khi cập nhật
 
     } catch (err) {
       showNotification(err.message, true);
     }
   }
+  async function populateCourseDropdown() {
+    const courseSelect = document.getElementById("course-select");
+    courseSelect.innerHTML = '<option value="">Chọn khóa học</option>';
 
+    try {
+      const response = await fetch("http://localhost:8080/CourseShop/api/admin/courses", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
 
-  function populateChapterDropdown(courseId) {
+      if (!response.ok) throw new Error("Không thể tải danh sách khóa học");
+
+      const data = await response.json();
+
+      data.forEach(course => {
+        const option = document.createElement("option");
+        option.value = course.id;
+        option.textContent = course.title;
+        courseSelect.appendChild(option);
+      });
+
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách khóa học:", error);
+      showNotification("Lỗi khi tải danh sách khóa học!", true);
+    }
+  }
+  async function populateChapterDropdown(courseId) {
     const chapterSelect = document.getElementById("chapter-select");
     chapterSelect.innerHTML = '<option value="">Chọn chương</option>';
-    const course = courses.find(c => c.id === parseInt(courseId));
-    if (course && course.chapters) {
-      course.chapters.forEach(chapter => {
+
+    try {
+      const response = await fetch(`http://localhost:8080/CourseShop/api/admin/courseSection/by-course/${courseId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) throw new Error("Không thể tải danh sách chương");
+
+      const chapters = await response.json();
+
+      chapters.forEach(chapter => {
         const option = document.createElement("option");
         option.value = chapter.id;
         option.textContent = chapter.title;
         chapterSelect.appendChild(option);
       });
+
+    } catch (error) {
+      console.error("Lỗi khi tải chương học:", error);
+      showNotification("Lỗi khi tải chương học!", true);
     }
   }
+
 
   async function loadChapters(courseId) {
     try {
@@ -435,7 +466,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         tr.innerHTML = `
         <td>${chapter.id}</td>
         <td>${chapter.title}</td>
-        <td>${chapter.section_order}</td>
+        <td>${chapter.sectionOrder}</td>
         <td>
           <button class="btn-edit" data-course-id="${courseId}" data-chapter-id="${chapter.id}">Sửa</button>
           <button class="btn-delete" data-course-id="${courseId}" data-chapter-id="${chapter.id}">Xóa</button>
@@ -455,7 +486,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  async function loadLessons(courseId, chapterId) {
+  async function loadLessons(courseId, sectionId) {
     try {
       const res = await fetch(`http://localhost:8080/CourseShop/api/admin/courseLesson/${sectionId}`, {
         headers: {"Authorization": `Bearer ${token}`}
@@ -472,20 +503,20 @@ document.addEventListener("DOMContentLoaded", async () => {
         <td>${lesson.id}</td>
         <td>${lesson.title}</td>
         <td>${lesson.content || "N/A"}</td>
-        <td>${lesson.video_url || "N/A"}</td>
+        <td>${lesson.videoUrl || "N/A"}</td>
         <td>${lesson.lesson_order}</td>
         <td>
-          <button class="btn-edit" data-course-id="${courseId}" data-chapter-id="${chapterId}" data-lesson-id="${lesson.id}">Sửa</button>
-          <button class="btn-delete" data-course-id="${courseId}" data-chapter-id="${chapterId}" data-lesson-id="${lesson.id}">Xóa</button>
+          <button class="btn-edit" data-course-id="${courseId}" data-chapter-id="${sectionId}" data-lesson-id="${lesson.id}">Sửa</button>
+          <button class="btn-delete" data-course-id="${courseId}" data-chapter-id="${sectionId}" data-lesson-id="${lesson.id}">Xóa</button>
         </td>`;
         tbody.appendChild(tr);
       });
 
       document.querySelectorAll("#lessons-table .btn-edit").forEach(btn => {
-        btn.addEventListener("click", () => editLesson(courseId, chapterId, parseInt(btn.dataset.lessonId)));
+        btn.addEventListener("click", () => editLesson(courseId, sectionId, parseInt(btn.dataset.lessonId)));
       });
       document.querySelectorAll("#lessons-table .btn-delete").forEach(btn => {
-        btn.addEventListener("click", () => deleteLesson(courseId, chapterId, parseInt(btn.dataset.lessonId)));
+        btn.addEventListener("click", () => deleteLesson(courseId, sectionId, parseInt(btn.dataset.lessonId)));
       });
 
     } catch (err) {
@@ -511,14 +542,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         body: JSON.stringify({
           title,
-          section_order: order
+          sectionOrder: order
         })
       });
       if (!res.ok) throw new Error("Tạo chương thất bại");
       showNotification(`Tạo chương thành công: ${title}`);
       e.target.reset();
       await loadChapters(courseId);
-      populateChapterDropdown(courseId);
+      await populateChapterDropdown(courseId);
     } catch (err) {
       showNotification(err.message, true);
     }
@@ -549,7 +580,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const courseId = parseInt(document.getElementById("course-select").value);
     const chapterId = parseInt(document.getElementById("chapter-select").value);
     const title = document.getElementById("lesson-title").value.trim();
-    const content = document.getElementById("lesson-content").value.trim() || null;
+    const content = document.getElementById("lesson-content").value.trim() ;
     const videoUrl = document.getElementById("lesson-video").value.trim() || null;
     const order = parseInt(document.getElementById("lesson-order").value);
 
@@ -560,8 +591,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const lessonData = {
       title,
       content,
-      video_url: videoUrl,
-      lesson_order: order
+      videoUrl: videoUrl,
+      lessonOrder: order
     };
 
     const success = await createLesson(courseId, chapterId, lessonData);
@@ -573,10 +604,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
 
-  async function editChapter(courseId, chapterId) {
+  async function editChapter(courseId, id) {
     try {
       // Lấy chapter hiện tại từ API (hoặc cache nếu có)
-      const res = await fetch(`http://localhost:8080/CourseShop/api/admin/courseSection/${chapterId}`, {
+      const res = await fetch(`http://localhost:8080/CourseShop/api/admin/courseSection/${id}`, {
         headers: {"Authorization": `Bearer ${token}`}
       });
       if (!res.ok) throw new Error("Không tìm thấy chương");
@@ -590,7 +621,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const orderNum = parseInt(newOrder);
       if (isNaN(orderNum)) return showNotification("Thứ tự không hợp lệ!", true);
 
-      const updateRes = await fetch(`http://localhost:8080/CourseShop/api/admin/courseSection/${chapterId}`, {
+      const updateRes = await fetch(`http://localhost:8080/CourseShop/api/admin/courseSection/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -598,31 +629,31 @@ document.addEventListener("DOMContentLoaded", async () => {
         },
         body: JSON.stringify({
           title: newTitle.trim(),
-          section_order: orderNum
+          sectionOrder: orderNum
         })
       });
       if (!updateRes.ok) throw new Error("Cập nhật chương thất bại");
       showNotification("Cập nhật chương thành công!");
       await loadChapters(courseId);
-      populateChapterDropdown(courseId);
+      await populateChapterDropdown(courseId);
     } catch (err) {
       showNotification(err.message, true);
     }
   }
 
 
-  async function deleteChapter(courseId, chapterId) {
+  async function deleteChapter(courseId, id) {
     if (!confirm("Bạn có chắc muốn xóa chương này? Tất cả bài học trong chương cũng sẽ bị xóa!")) return;
 
     try {
-      const res = await fetch(`http://localhost:8080/CourseShop/api/admin/courseSection/${chapterId}`, {
+      const res = await fetch(`http://localhost:8080/CourseShop/api/admin/courseSection/${id}`, {
         method: "DELETE",
         headers: {"Authorization": `Bearer ${token}`}
       });
       if (!res.ok) throw new Error("Xóa chương thất bại");
       showNotification("Xóa chương thành công!");
       await loadChapters(courseId);
-      populateChapterDropdown(courseId);
+      await populateChapterDropdown(courseId);
     } catch (err) {
       showNotification(err.message, true);
     }
@@ -685,8 +716,66 @@ document.addEventListener("DOMContentLoaded", async () => {
       showNotification(err.message, true);
     }
   }
+  document.getElementById("course-select")?.addEventListener("change", (e) => {
+    const courseId = e.target.value;
+    if (courseId) {
+      loadChapters(courseId);
+      populateChapterDropdown(courseId);
+      document.querySelector("#lessons-table tbody").innerHTML = "";
+    }
+  });
+  document.getElementById("chapter-select")?.addEventListener("change", (e) => {
+    const courseId = document.getElementById("course-select").value;
+    const chapterId = e.target.value;
+    if (courseId && chapterId) {
+      loadLessons(courseId, chapterId);
+    }
+  });
 
 
+  document.getElementById("folder-select")?.addEventListener("click", () => {
+    document.getElementById("folder-input").click();
+  });
+
+  document.getElementById("folder-input")?.addEventListener("change", async (event) => {
+    const files = event.target.files;
+    const courseId = parseInt(document.getElementById("course-select").value);
+    const chapterId = parseInt(document.getElementById("chapter-select").value);
+
+    if (!chapterId) {
+      return showNotification("Vui lòng chọn chương!", true);
+    }
+
+    if (files.length > 0) {
+      try {
+        const sortedFiles = Array.from(files).sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { numeric: true })
+        );
+
+        for (let i = 0; i < sortedFiles.length; i++) {
+          const file = sortedFiles[i];
+          const fileName = file.name;
+          const baseName = fileName.substring(0, fileName.lastIndexOf(".")) || fileName;
+          const videoUrl = `/videos/${file.name}`;
+
+          const lessonData = {
+            title: baseName,
+            content: null,
+            video_url: videoUrl, // Có thể sửa lại đường dẫn nếu backend cần
+            lesson_order: i + 1
+          };
+
+          await createLesson(courseId, chapterId, lessonData);
+        }
+
+        showNotification("Tự động thêm bài học thành công!");
+        await loadLessons(courseId, chapterId);
+      } catch (err) {
+        console.error(err);
+        showNotification("Có lỗi khi thêm bài học!", true);
+      }
+    }
+  });
   function showNotification(message, isError = false) {
     const notification = document.getElementById("notification");
     notification.textContent = message;
@@ -694,7 +783,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     notification.className = isError ? "error" : "";
     setTimeout(() => notification.style.display = "none", 3000);
   }
-    populateCourseDropdown()
+    await populateCourseDropdown()
     await loadStatistics();
     await initChart();
     await loadCourses();
@@ -704,63 +793,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 
-document.getElementById("course-select")?.addEventListener("change", (e) => {
-  const courseId = e.target.value;
-  if (courseId) {
-    loadChapters(courseId);
-    populateChapterDropdown(courseId);
-    document.querySelector("#lessons-table tbody").innerHTML = "";
-  }
-});
-document.getElementById("chapter-select")?.addEventListener("change", (e) => {
-  const courseId = document.getElementById("course-select").value;
-  const chapterId = e.target.value;
-  if (courseId && chapterId) {
-    loadLessons(courseId, chapterId);
-  }
-});
 
 
-document.getElementById("folder-select")?.addEventListener("click", () => {
-  document.getElementById("folder-input").click();
-});
-
-document.getElementById("folder-input")?.addEventListener("change", async (event) => {
-  const files = event.target.files;
-  const courseId = parseInt(document.getElementById("course-select").value);
-  const chapterId = parseInt(document.getElementById("chapter-select").value);
-
-  if (!courseId || !chapterId) {
-    return showNotification("Vui lòng chọn khóa học và chương!", true);
-  }
-
-  if (files.length > 0) {
-    try {
-      const sortedFiles = Array.from(files).sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, { numeric: true })
-      );
-
-      for (let i = 0; i < sortedFiles.length; i++) {
-        const file = sortedFiles[i];
-        const fileName = file.name;
-        const baseName = fileName.substring(0, fileName.lastIndexOf(".")) || fileName;
-        const videoUrl = `/videos/${file.name}`;
-
-        const lessonData = {
-          title: baseName,
-          content: null,
-          video_url: videoUrl, // Có thể sửa lại đường dẫn nếu backend cần
-          lesson_order: i + 1
-        };
-
-        await createLesson(courseId, chapterId, lessonData);
-      }
-
-      showNotification("Tự động thêm bài học thành công!");
-      await loadLessons(courseId, chapterId);
-    } catch (err) {
-      console.error(err);
-      showNotification("Có lỗi khi thêm bài học!", true);
-    }
-  }
-});

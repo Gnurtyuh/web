@@ -378,33 +378,44 @@
             <select id="chapter-select" name="chapter" required>
               <option value="">Chọn chương</option>
             </select>
-            <label for="folder-select">Chọn thư mục</label>
+            <label for="lesson-title">Tiêu đề bài học</label>
+            <input type="text" id="lesson-title" name="title" required />
+            <label for="lesson-content">Nội dung</label>
+            <input type="text" id="lesson-content" name="" required />
+            <label for="lesson-video">Video URL</label>
+            <input type="text" id="lesson-video" name="video_url" />
+            <label for="lesson-order">Thứ tự</label>
             <input
-              type="file"
-              id="folder-input"
-              webkitdirectory
-              directory
-              style="display: none"
+              type="number"
+              id="lesson-order"
+              name="order"
+              min="1"
+              required
             />
-    <select id="folder-select" name="folder" required>
-      <option value="">Chọn thư mục</option>
-    </select>
-    <label for="lesson-title">Tiêu đề bài học</label>
-    <input type="text" id="lesson-title" name="title" required />
-    <label for="lesson-content">Nội dung</label>
-    <textarea id="lesson-content" name="content" rows="4"></textarea>
-    <label for="lesson-video">Video URL</label>
-    <input type="url" id="lesson-video" name="video_url" />
-    <label for="lesson-order">Thứ tự</label>
-    <input
-      type="number"
-      id="lesson-order"
-      name="order"
-      min="1"
-      required
-    />
-    <button type="submit" class="btn-submit">Tạo bài học</button>
-  </form>
+            <button type="submit" class="btn-submit">Tạo bài học</button>
+          </form>
+        </div>
+          <div class="lesson-management">
+              <h2>Quản lý danh sách bài học</h2>
+              <form id="createLessonForm">
+                <label for="chapter-select">Chọn chương</label>
+                <select id="chapterSelect" name="chapter" required>
+                  <option value="">Chọn chương</option>
+                </select>
+                <label for="folder-select">Chọn thư mục</label>
+                <input
+                        type="file"
+                        id="folder-input"
+                        webkitdirectory
+                        directory
+                        style="display: none"
+                />
+                <select id="folder-select" name="folder" required>
+                  <option value="">Chọn thư mục</option>
+                </select>
+                <button type="submit" class="btn-submit">Tạo bài học</button>
+              </form>
+          </div>
           <table id="lessons-table">
             <thead>
               <tr>
@@ -420,7 +431,7 @@
               <!-- Lessons will load here -->
             </tbody>
           </table>
-        </div>
+
       </section>
 
       <section id="manage-courses" class="content-section">

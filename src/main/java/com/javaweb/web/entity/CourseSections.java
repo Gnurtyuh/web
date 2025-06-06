@@ -21,7 +21,7 @@ public class CourseSections {
     @Column(name = "title", nullable = false)
     private String title;
     @Column(name = "section_order", nullable = false)
-    private String sectionOrder;
+    private int sectionOrder;
     @Column(name = "created_at", updatable = false, insertable = false)
     private Timestamp createdAt;
 
