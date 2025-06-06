@@ -1,7 +1,9 @@
 package com.javaweb.web.service;
 
 import com.javaweb.web.entity.CourseLessons;
+import com.javaweb.web.entity.CourseSections;
 import com.javaweb.web.repository.CourseLessonsRepo;
+import com.javaweb.web.repository.CourseSectionsRepo;
 import com.javaweb.web.repository.EnrollmentsRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,7 +16,8 @@ public class CourseLessonsService {
     @Autowired
     private CourseLessonsRepo coursesLessonsRepo;
     @Autowired private EnrollmentsRepo enrollRepo;
-
+    @Autowired
+    private CourseSectionsRepo courseSectionsRepo;
     public CourseLessons getLessonWithAccessCheck(int id, int userId) {
         CourseLessons lesson = coursesLessonsRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy bài học"));
@@ -40,7 +43,9 @@ public class CourseLessonsService {
         return coursesLessonsRepo.getCoursesLessonBySectionId(sectionId);
     }
 
-    public CourseLessons addCoursesLesson(CourseLessons coursesLesson) {
+    public CourseLessons addCoursesLesson(int sectionId,CourseLessons coursesLesson) {
+        CourseSections section = courseSectionsRepo.findById(sectionId).orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
+        coursesLesson.setSection(section);
         return coursesLessonsRepo.save(coursesLesson);
     }
     public CourseLessons updateCoursesLesson(int id,CourseLessons coursesLesson) {

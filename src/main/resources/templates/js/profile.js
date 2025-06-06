@@ -86,7 +86,7 @@
          } catch (err) {
              console.error("Lỗi khi xác thực:", err.message);
              alert('Đã xảy ra lỗi. Vui lòng thử lại sau.' + err.message);
-
+             redirectToLogin();
              return false;
          }
      }

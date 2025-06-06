@@ -4,6 +4,7 @@ import com.javaweb.web.entity.CourseSections;
 import com.javaweb.web.entity.Courses;
 import com.javaweb.web.repository.CourseSectionsRepo;
 import com.javaweb.web.repository.CoursesRepo;
+import com.javaweb.web.util.DirectoryUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ public class CourseSectionsService {
     private CourseSectionsRepo courseSectionsRepo;
     @Autowired
     private CoursesRepo coursesRepo;
+    private final DirectoryUtil directoryUtil = new DirectoryUtil();
     public List<CourseSections> getAllCourseSections() {
         return courseSectionsRepo.findAll();
     }
@@ -31,6 +33,7 @@ public class CourseSectionsService {
         Courses course = coursesRepo.findById(courseId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy khóa học"));
         section.setCourse(course);
+        directoryUtil.createVideoDirectory(course.getTitle(), section.getTitle());
         return courseSectionsRepo.save(section);
     }
 

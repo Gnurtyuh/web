@@ -1,6 +1,7 @@
 package com.javaweb.web.controller.user;
 
 import com.javaweb.web.entity.CourseLessons;
+import com.javaweb.web.entity.Courses;
 import com.javaweb.web.entity.Users;
 import com.javaweb.web.service.AccessService;
 import com.javaweb.web.service.CourseLessonsService;
@@ -43,12 +44,12 @@ public class CourseLessonsController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Không tìm thấy bài học.");
         }
     }
-    @GetMapping("findAll")
+    @GetMapping("/findAll")
     ResponseEntity<List<CourseLessons>> getCoursesLessonBySectionId(@RequestParam("section_id") int sectionId) {
         List<CourseLessons> lessons = courseLessonsService.getCoursesLessonBySectionId(sectionId);
         return ResponseEntity.ok(lessons);
     }
-    @GetMapping("find{id}")
+    @GetMapping("/find{id}")
     ResponseEntity<CourseLessons> findByLessonId(@PathVariable("id") int id) {
         return ResponseEntity.ok(courseLessonsService.findById(id));
     }

@@ -71,7 +71,7 @@ document.getElementById('loginAdminForm').addEventListener('submit', async funct
 
     if (response.ok && data.token) {
       // Lưu token vào localStorage
-      localStorage.setItem('adminToken', data.token);
+      localStorage.setItem('userToken', data.token);
 
       // Tùy backend có thể trả thêm thông tin user trong payload hoặc kèm theo
       const admin = {

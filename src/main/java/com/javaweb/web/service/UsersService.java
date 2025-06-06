@@ -45,6 +45,9 @@ public class UsersService {
         }
         return null;
     }
+    public int count(){
+        return (int )userRepo.count();
+    }
     public void updateUser(Users user) {
         userRepo.save(user);
     }

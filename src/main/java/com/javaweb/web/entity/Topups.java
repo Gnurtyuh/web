@@ -19,12 +19,12 @@ public class Topups {
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
     private Users user;
-    @Column(name = "amount", updatable = false, insertable = false)
+    @Column(name = "amount", nullable = false)
     private BigDecimal amount;
     @Column(name = "status", updatable = false, insertable = false)
     private String status;
     @Column(name = "created_at", updatable = false, insertable = false)
     private Timestamp createdAt;
-    @Column(name = "reference_code", updatable = false, insertable = false)
+    @Column(name = "reference_code", nullable = false)
     private String referenceCode;
 }

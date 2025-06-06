@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 @RestController
-@RequestMapping("/admin/payment")
+@RequestMapping("/api/admin/payment")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class AdPaymentController {
@@ -23,11 +23,14 @@ public class AdPaymentController {
     TopupsService topupsService;
     @Autowired
     EnrollmentsService enrollmentService;
-    @PostMapping
-    public ResponseEntity<?> UpdateTopups(@RequestBody Topups topups) {
-        return ResponseEntity.ok("Xét duyệt thành công");
+    @PutMapping("/{id}/status")
+    public ResponseEntity<?> UpdateTopups(@PathVariable int id, @RequestBody String status) {
+        if (topupsService.updateTopups(id, status)){
+            return ResponseEntity.ok("Xét duyệt thành công");
+        }
+        return ResponseEntity.ok("Xét duyệt thất bại");
     }
-    @GetMapping("history")
+    @GetMapping("/history")
     public ResponseEntity<List<Topups>> history() {
         return ResponseEntity.ok(topupsService.getAllTopups());
     }
@@ -36,7 +39,7 @@ public class AdPaymentController {
         List<Enrollments> enrollments = enrollmentService.getEnrollmentByUserId(userId);
         return ResponseEntity.ok(enrollments);
     }
-    @GetMapping("findAll")
+    @GetMapping("/findAll")
     public ResponseEntity<List<Enrollments>> findAll() {
         List<Enrollments> enrollments = enrollmentService.getAllEnrollments();
         return ResponseEntity.ok(enrollments);

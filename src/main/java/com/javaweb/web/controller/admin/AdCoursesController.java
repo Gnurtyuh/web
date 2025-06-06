@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 @RestController
-@RequestMapping("/admin/courses")
+@RequestMapping("/api/admin/courses")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class AdCoursesController {

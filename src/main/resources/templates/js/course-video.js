@@ -28,15 +28,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Kiểm tra trạng thái đăng nhập
-  function checkLogin() {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
+  async function checkLogin() {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      redirectToLogin();
+      return false;
+    }
+    const res = await fetch("http://localhost:8080/CourseShop/api/users/user/me", {
+      headers: {
+        "Authorization": "Bearer " + token,
+      },
+    });
+    if (!res.ok) throw new Error("Token không hợp lệ");
+    const user = await res.json();
+    if (user && token) {
       if (authButtons) authButtons.style.display = "none";
       if (userMenu) {
         userMenu.style.display = "flex";
         if (menuName) menuName.textContent = user.name || "User";
-        if (menuAvatar) menuAvatar.src = user.avatar || "user-avatar.png";
+
       }
+      return {user, token};
     } else {
       if (authButtons) authButtons.style.display = "flex";
       if (userMenu) userMenu.style.display = "none";
@@ -46,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 1500);
       return null;
     }
-    return user;
   }
 
   // Hàm đăng xuất
@@ -140,104 +151,115 @@ document.addEventListener("DOMContentLoaded", () => {
   const urlParams = new URLSearchParams(window.location.search);
   const courseId = urlParams.get("courseId");
 
-  // Dữ liệu khóa học mẫu (thay bằng API trong thực tế)
-  const courses = [
-    {
-      id: "js101",
-      name: "Lập trình JavaScript cơ bản",
-      description: "Học các kiến thức cơ bản về JavaScript để xây dựng web tương tác.",
-      lessons: [
-        { id: "js101-1", title: "Giới thiệu JavaScript", videoUrl: "https://example.com/videos/js101-1.mp4" },
-        { id: "js101-2", title: "Biến và kiểu dữ liệu", videoUrl: "https://example.com/videos/js101-2.mp4" },
-        { id: "js101-3", title: "Hàm trong JavaScript", videoUrl: "https://example.com/videos/js101-3.mp4" }
-      ]
-    },
-    {
-      id: "py101",
-      name: "Python cho người mới bắt đầu",
-      description: "Khóa học Python từ cơ bản đến nâng cao dành cho người mới.",
-      lessons: [] // Trường hợp không có bài giảng
-    }
-  ];
+  async function fetchCourse(url) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-  // Kiểm tra quyền sở hữu khóa học
-  function checkCourseOwnership(courseId) {
-    if (!user.myCourses || !user.myCourses.some(c => c.id === courseId)) {
-      showNotification("Bạn chưa sở hữu khóa học này!", true);
-      setTimeout(() => {
-        window.location.href = "courses.html";
-      }, 1500);
-      return false;
+      if (response.status === 401) {
+        showNotification("Phiên đăng nhập đã hết hạn.", true);
+        setTimeout(() => window.location.href = "login.html", 1500);
+        return null;
+      }
+
+      if (!response.ok) {
+        showNotification("Không tìm thấy khóa học!", true);
+        setTimeout(() => window.location.href = "courses.html", 1500);
+        return null;
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Fetch error:", error);
+      showNotification("Đã xảy ra lỗi khi tải khóa học.", true);
+      setTimeout(() => window.location.href = "my-courses.html", 1500);
+      return null;
     }
-    return true;
   }
 
-  // Hàm render thông tin khóa học
-  function renderCourse(course) {
-    if (!course) {
-      showNotification("Không tìm thấy khóa học!", true);
-      setTimeout(() => {
-        window.location.href = "courses.html";
-      }, 1500);
-      return;
-    }
+  // Kiểm tra quyền sở hữu khóa học
+  async function loadCourseData(courseId) {
+    try {
+      // 1. Lấy thông tin khóa học
+      const course = await fetchCourse(`http://localhost:8080/CourseShop/api/users/course/me/${courseId}`);
+      courseTitle.textContent = course.name;
+      courseDescription.textContent = course.description;
 
-    if (courseTitle) courseTitle.textContent = course.name;
-    if (courseDescription) courseDescription.textContent = course.description;
+      // 2. Lấy danh sách sections
+      const sections = await fetchCourse(`http://localhost:8080/CourseShop/api/public/courseSection/by-course/${courseId}`);
 
-    // Kiểm tra danh sách bài giảng
-    if (lessonsList) {
-      lessonsList.innerHTML = "";
-      if (!course.lessons || course.lessons.length === 0) {
-        lessonsList.innerHTML = '<p>Khóa học hiện chưa có bài giảng.</p>';
-        if (courseVideo) courseVideo.style.display = "none";
+      if (!sections.length) {
+        lessonsList.innerHTML = "<li>Khóa học chưa có chương nào.</li>";
         return;
       }
 
-      // Render danh sách bài giảng
-      course.lessons.forEach((lesson, index) => {
-        const li = document.createElement("li");
-        li.className = index === 0 ? "active" : "";
-        li.innerHTML = `<a href="#" data-video="${lesson.videoUrl}" data-title="${lesson.title}">${lesson.title}</a>`;
-        lessonsList.appendChild(li);
-      });
+      lessonsList.innerHTML = "";
 
-      // Phát video đầu tiên
-      if (course.lessons.length > 0 && courseVideo) {
-        courseVideo.src = course.lessons[0].videoUrl;
-        courseVideo.load();
-        courseVideo.style.display = "block";
+      let firstVideoSet = false;
+
+      // 3. Lặp từng section để gọi tiếp /lessons
+      for (const section of sections) {
+        // Tạo tiêu đề section
+        const sectionTitle = document.createElement("li");
+        sectionTitle.innerHTML = `<strong>${section.title}</strong>`;
+        sectionTitle.classList.add("section-title");
+        lessonsList.appendChild(sectionTitle);
+
+        // 4. Lấy lessons cho section đó
+        const lessons = await fetchCourse(`/api/users/courseLesson/findAll?section_id=${sections.id}`);
+
+        lessons.forEach((lesson, index) => {
+          const lessonItem = document.createElement("li");
+          lessonItem.className = (!firstVideoSet && index === 0) ? "active" : "";
+
+          lessonItem.innerHTML = `<a href="#" data-video="${lesson.videoUrl}">${lesson.title}</a>`;
+          lessonsList.appendChild(lessonItem);
+
+          // Auto phát video đầu tiên
+          if (!firstVideoSet && index === 0) {
+            courseVideo.src = lesson.videoUrl;
+            courseVideo.load();
+            courseVideo.style.display = "block";
+            firstVideoSet = true;
+          }
+
+          // Click để phát video
+          lessonItem.querySelector("a").addEventListener("click", (e) => {
+            e.preventDefault();
+            courseVideo.src = lesson.videoUrl;
+            courseVideo.load();
+            courseVideo.style.display = "block";
+            lessonsList.querySelectorAll("li").forEach(li => li.classList.remove("active"));
+            lessonItem.classList.add("active");
+          });
+        });
       }
 
-      // Gắn sự kiện cho các bài học
-      const lessonLinks = lessonsList.querySelectorAll("a");
-      lessonLinks.forEach(link => {
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-          const videoUrl = link.getAttribute("data-video");
-          if (courseVideo) {
-            courseVideo.src = videoUrl;
-            courseVideo.load();
-          }
-          lessonsList.querySelectorAll("li").forEach(l => l.classList.remove("active"));
-          link.parentElement.classList.add("active");
-        });
-      });
+    } catch (err) {
+      console.error("Lỗi khi tải dữ liệu khóa học:", err);
+      alert("Không thể tải dữ liệu khóa học. Vui lòng thử lại.");
+      window.location.href = "courses.html";
     }
   }
 
+// Gọi hàm khởi tạo
+  loadCourseData(courseId);
+
   // Tìm khóa học theo ID và kiểm tra quyền sở hữu
-  const course = courses.find(c => c.id === courseId);
-  if (!course || !courseId) {
-    showNotification("Không tìm thấy khóa học!", true);
-    setTimeout(() => {
-      window.location.href = "course.html";
-    }, 1500);
-    return;
-  }
+  (async function () {
+    if (!courseId) {
+      showNotification("Không tìm thấy khóa học!", true);
+      setTimeout(() => window.location.href = "my-courses.html", 1500);
+      return;
+    }
 
-  if (!checkCourseOwnership(courseId)) return;
+    const course = await fetchCourse(courseId);
+    if (!course) return;
 
-  // Hiển thị thông tin khóa học
-  renderCourse(course);
+    renderCourse(course);
+  })()
 });

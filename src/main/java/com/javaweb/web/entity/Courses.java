@@ -17,13 +17,13 @@ public class Courses {
     private int id;
     @Column(name = "title", nullable = false)
     private String title;
-    @Column(name = "description", updatable = false, insertable = false)
+    @Column(name = "description", nullable = false)
     private String description;
-    @Column(name = "price", updatable = false, insertable = false)
+    @Column(name = "price", nullable = false)
     private BigDecimal price;
     @Column(name = "created_at", updatable = false, insertable = false)
     private Timestamp createdAt;
-    @Column(name ="thumbnail_url", nullable = false)
+    @Column(name ="thumbnail_url", updatable = false, insertable = false)
     private String thumbnailUrl;
 
 }

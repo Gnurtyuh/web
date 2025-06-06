@@ -9,10 +9,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 @RestController
-@RequestMapping("/admin/admin")
+@RequestMapping("/api/admin/admin")
 public class AdminController {
     @Autowired
     private AdminService adminService;
@@ -22,10 +25,15 @@ public class AdminController {
     Admin createAdmin(@RequestBody Admin admin) {
         return adminService.adminRegister(admin);
     }
-    @GetMapping("/UserAll")
+    @GetMapping("/userAll")
     ResponseEntity<List<Users>> getAllUsers() {
         List<Users> users = usersService.getAllUsers();
         return ResponseEntity.ok(users);
     }
-
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<String, Object>> getStatistics() {
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("totalUsers", usersService.count());
+        return ResponseEntity.ok(stats);
+    }
 }

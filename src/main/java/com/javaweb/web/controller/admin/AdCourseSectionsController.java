@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @PreAuthorize("hasRole('ROLE_ADMIN')")
 @RestController
-@RequestMapping("/admin/courseSection")
+@RequestMapping("/api/admin/courseSection")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class AdCourseSectionsController {
@@ -22,7 +22,7 @@ public class AdCourseSectionsController {
     CourseSectionsService sectionService;
 
 
-    @GetMapping("/By-course/{courseId}")
+    @GetMapping("/by-course/{courseId}")
     public ResponseEntity<List<CourseSections>> getByCourse(@PathVariable int courseId) {
         List<CourseSections> sections = sectionService.getCourseSectionsByCourseId(courseId);
         return ResponseEntity.ok(sections);

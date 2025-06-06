@@ -2,6 +2,7 @@ package com.javaweb.web.service;
 
 import com.javaweb.web.entity.Courses;
 import com.javaweb.web.repository.CoursesRepo;
+import com.javaweb.web.util.DirectoryUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +12,7 @@ import java.util.List;
 public class CoursesService {
     @Autowired
     private CoursesRepo coursesRepo;
-
+    private final DirectoryUtil directoryUtil = new DirectoryUtil();
     public List<Courses> getAllCourses() {
         return coursesRepo.findAll();
     }
@@ -19,6 +20,7 @@ public class CoursesService {
         return coursesRepo.findById(id).orElseThrow(()-> new RuntimeException("Course Not Found"));
     }
     public Courses addCourse(Courses course) {
+        directoryUtil.createCourseVideoDirectory(course.getTitle());
         return coursesRepo.save(course);
     }
     public Courses updateCourse(int id,Courses course) {

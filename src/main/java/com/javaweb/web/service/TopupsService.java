@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TopupsService {
@@ -22,12 +23,13 @@ public class TopupsService {
     public Topups getTopupsById(int id) {
         return topupsRepo.findById(id).orElseThrow(() -> new RuntimeException("Topups Not Found"));
     }
-    public Topups updateTopups(int id,Topups topups) {
-        if (topupsRepo.findById(id).orElseThrow(() -> new RuntimeException("Topups Not Found")) != null) {
-            userService.increaseBalance(topups.getUser().getId(), topups.getAmount());
-            return topupsRepo.save(topups);
-        }
-        return null;
+    public boolean updateTopups(int id, String status) {
+        Optional<Topups> optional = topupsRepo.findById(id);
+        if (!optional.isPresent()) return false;
+        Topups topups = optional.get();
+        userService.increaseBalance(topups.getUser().getId(), topups.getAmount());
+        topupsRepo.save(topups);
+        return true;
     }
     public void deleteTopups(int id) {
         topupsRepo.deleteById(id);

@@ -24,7 +24,7 @@ public class CourseLessons {
     private String content;
     @Column(name = "lesson_order", nullable = false)
     private String lessonOrder;
-    @Column(name = "video_url", updatable = false, insertable = false)
+    @Column(name = "video_url",nullable = false)
     private String videoUrl;
     @Column(name = "created_at", updatable = false, insertable = false)
     private Timestamp createdAt;
